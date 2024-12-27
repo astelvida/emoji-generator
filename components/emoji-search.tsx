@@ -33,7 +33,7 @@ export function EmojiSearch({ placeholder }: { placeholder: string }) {
   }, 300);
 
   return (
-    <div className="relative px-4 pb-4" key={pathname}>
+    <div className="relative px-4 pb-4">
       <label htmlFor="search" className="sr-only">
         Search
       </label>

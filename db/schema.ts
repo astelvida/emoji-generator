@@ -9,6 +9,7 @@ import {
   uuid,
   index,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -21,29 +22,41 @@ export const users = pgTable("users", {
 
 // const status = pgEnum("status", ["generating", "generated"]);
 // prettier-ignore
-export const emojis = pgTable("emojis", {
-  id: varchar("id").primaryKey(),
-  
-  prompt: text("prompt").notNull(),
-  slug: text("slug"),
-  originalUrl: text("original_url"),
-  imageUrl: text("image_url"),
+export const emojis = pgTable(
+  "emojis",
+  {
+    id: varchar("id").primaryKey(),
 
-  caption: text("caption"),
-  description: text("description"),
-  categories: json("categories").$type<string[]>().default([]),
-  keywords: json("keywords").$type<string[]>().default([]),
+    prompt: text("prompt").notNull(),
+    slug: text("slug"),
+    originalUrl: text("original_url"),
+    imageUrl: text("image_url"),
 
-  status: text("status").default("generating"),
-  favoriteCount: integer("favorite_count").default(0),
+    caption: text("caption"),
+    description: text("description"),
+    categories: json("categories").$type<string[]>().default([]),
+    keywords: json("keywords").$type<string[]>().default([]),
 
+    status: text("status").default("generating"),
+    favoriteCount: integer("favorite_count").default(0),
 
-  userId: varchar("user_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+    userId: varchar("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    searchIndex: index("search_index").using(
+      "gin",
+      sql`(
+          setweight(to_tsvector('english', ${table.prompt}), 'A') ||
+          setweight(to_tsvector('english', ${table.description}), 'B') ||
+          setweight(to_tsvector('english', ${table.caption}), 'C')
+      )`
+    ),
+  })
+);
 
 // .where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
 

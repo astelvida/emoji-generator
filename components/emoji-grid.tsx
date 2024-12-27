@@ -6,6 +6,7 @@ import {
 } from "@/db/queries";
 import { Skeleton } from "./ui/skeleton";
 import EmojiCardList from "./emoji-card-list";
+import { runSearch } from "@/db/search-emojis";
 
 interface EmojisGridProps {
   emojiId?: string | undefined;
@@ -17,7 +18,7 @@ export async function EmojisGrid({ emojiId, query }: EmojisGridProps) {
     query && emojiId
       ? getRelatedEmojis(emojiId, query)
       : query
-      ? searchEmojis(query)
+      ? runSearch(query)
       : getRecentEmojis(),
     getUserLikedEmojis(),
   ]);

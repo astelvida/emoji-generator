@@ -50,3 +50,26 @@ export const searchEmojis = cache(
     return results;
   }
 );
+
+export async function runSearch(query: string) {
+  const searchQuery = query
+    .trim()
+    .split(/\s+/)
+    .map((term) => term.replace(/[^\w\s]/g, "")) // Remove special characters
+    .filter(Boolean) // Remove empty strings
+    .map((term) => `${term}:*`) // Add prefix matching
+    .join(" | "); // Use AND operation
+
+  console.log("searchQuery", searchQuery);
+  const results = await db.select().from(emojis).where(sql`(
+      setweight(to_tsvector('english', ${emojis.prompt}), 'A') ||
+      setweight(to_tsvector('english', ${emojis.description}), 'B') ||
+      setweight(to_tsvector('english', ${emojis.caption}), 'C'))
+      @@ to_tsquery('english', ${searchQuery}
+    )`);
+
+  // console.log(results);
+  return results;
+}
+
+// runSearch("cats dogs");
