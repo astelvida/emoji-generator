@@ -19,9 +19,9 @@ export function EmojiSearch({ placeholder }: { placeholder: string }) {
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
     if (term) {
-      params.set("query", term);
+      params.set("q", term);
     } else {
-      params.delete("query");
+      params.delete("q");
     }
     startTransition(() => {
       if (pathname === "/search") {
@@ -40,9 +40,9 @@ export function EmojiSearch({ placeholder }: { placeholder: string }) {
       <Input
         ref={searchInputRef}
         id="search"
-        defaultValue={searchParams.get("query")?.toString()}
+        defaultValue={searchParams.get("q")?.toString()}
         type="search"
-        name="query"
+        name="q"
         className="pl-10 h-12 text-lg rounded-lg border-muted-foreground/20"
         placeholder={placeholder}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

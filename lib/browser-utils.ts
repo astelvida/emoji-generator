@@ -23,11 +23,12 @@ export function copyToClipboard(imageUrl: string) {
     mode: "cors",
   })
     .then((response) => response.blob())
-    .then((blob) => navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]));
+    .then((blob) =>
+      navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
+    );
 }
 
 export function downloadImageWithFilename(url: string, filename?: string) {
-  console.log("downloadImageWithFilename", url, filename);
   return fetch(url, {
     headers: new Headers({ Origin: location.origin }),
     mode: "cors",
@@ -37,10 +38,8 @@ export function downloadImageWithFilename(url: string, filename?: string) {
         throw new Error(`Failed to fetch image: ${response.statusText}`);
       }
 
-      console.log("response", Array.from(response.headers.entries()));
       // Extract filename from Content-Disposition if available
       const disposition = response.headers.get("Content-Disposition");
-      console.log("disposition", disposition);
       filename = filename || "downloaded-image"; // Default filename
       if (disposition && disposition.includes("filename=")) {
         const match = disposition.match(/filename="([^"]+)"/);
@@ -53,7 +52,6 @@ export function downloadImageWithFilename(url: string, filename?: string) {
     })
     .then(({ blob, filename }) => {
       const url = URL.createObjectURL(blob);
-      console.log("url", url);
       const a = document.createElement("a");
       a.href = url;
       a.download = filename;

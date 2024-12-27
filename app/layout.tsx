@@ -47,7 +47,6 @@ export default function RootLayout({
             <div className="mx-auto max-w-6xl container px-4 py-6">
               <Header />
               {children}
-              {/* <main className="mx-auto container px-4 py-6">{children}</main> */}
             </div>
             <Toaster />
           </ThemeProvider>

@@ -1,7 +1,6 @@
 import { updateEmoji } from "@/db/queries";
-import { Response } from "@/server/utils";
 import Replicate from "replicate";
-import { extractPrompt, retrievePrompt } from "@/lib/utils";
+import { extractPrompt } from "@/lib/utils";
 import slugify from "slugify";
 import { put } from "@vercel/blob";
 import { generateEmojiInfo } from "@/server/openai";
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
       input: { prompt },
     } = body;
 
-    if (!output) return Response.badRequest("Missing output");
+    if (!output) return Response.error();
 
     const rmbgOutput = await replicate.run(
       "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
@@ -82,10 +81,10 @@ export async function POST(req: Request) {
 
     // console.log("finalEmoji %O", finalEmoji.prompt);
 
-    return Response.success();
+    return Response.json({ success: true });
   } catch (error) {
     console.error(error);
-    return Response.internalServerError();
+    return Response.json({ success: false });
   }
 }
 

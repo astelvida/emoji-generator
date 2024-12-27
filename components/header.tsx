@@ -14,6 +14,12 @@ export default function Header() {
             <Link href="/" className="font-medium hover:text-primary">
               Emoji Generator
             </Link>
+            <Link href="/q" className="font-medium hover:text-primary">
+              Q
+            </Link>
+            <Link href="/search" className="font-medium hover:text-primary">
+              Search
+            </Link>
           </nav>
           <div className="ml-auto flex items-center gap-6">
             <ModeToggle />

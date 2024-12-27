@@ -111,40 +111,12 @@ const SubmitButton = () => {
       className="h-8 w-8 rounded-full"
       disabled={pending}
     >
-      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+      {pending ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <ArrowRight className="h-4 w-4" />
+      )}
       <span className="sr-only">Generate</span>
     </Button>
   );
 };
-
-// const themeOptions = ["Pixel Art", "Watercolor", "Retro", "Minimalist", "Custom"];
-
-// export function SelectTheme() {
-//   const [theme, setTheme] = useState(themeOptions[2]);
-//   const [customTheme, setCustomTheme] = useState("");
-
-//   return (
-//     <div className="flex items-center gap-4">
-//       <Select value={theme} onValueChange={setTheme}>
-//         <SelectTrigger className="w-[180px]">
-//           <SelectValue placeholder="Select theme" />
-//         </SelectTrigger>
-//         <SelectContent>
-//           {themeOptions.map((option) => (
-//             <SelectItem key={option} value={option}>
-//               {option}
-//             </SelectItem>
-//           ))}
-//         </SelectContent>
-//       </Select>
-//       {theme === "custom" && (
-//         <Input
-//           placeholder="Enter custom theme..."
-//           value={customTheme}
-//           onChange={(e) => setCustomTheme(e.target.value)}
-//           className="flex-1"
-//         />
-//       )}
-//     </div>
-//   );
-// }
