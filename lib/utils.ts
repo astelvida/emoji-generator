@@ -5,7 +5,8 @@ import { customAlphabet } from "nanoid";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const nanoid = customAlphabet(
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
@@ -30,11 +31,14 @@ export function nFormatter(num: number, digits?: number) {
     .find(function (item) {
       return num >= item.value;
     });
-  return item ? (num / item.value).toFixed(digits || 1).replace(rx, "$1") + item.symbol : "0";
+  return item
+    ? (num / item.value).toFixed(digits || 1).replace(rx, "$1") + item.symbol
+    : "0";
 }
 
 export function generateUniqueString(length: number = 12): string {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let uniqueString = "";
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
@@ -45,7 +49,9 @@ export function generateUniqueString(length: number = 12): string {
 
 export function roundBy(x: number, decimals: number = 1) {
   if (isNaN(Number(x))) return 0;
-  return Math.round(Number(x) * Math.pow(10, decimals)) / Math.pow(10, decimals);
+  return (
+    Math.round(Number(x) * Math.pow(10, decimals)) / Math.pow(10, decimals)
+  );
 }
 
 export const getAspectRatioClass = (ratio: string) => {
@@ -69,7 +75,9 @@ export const getDimensionsByRatio = (ratio: string, scale: Scale = 1) => {
     shadcnClass,
     twClass,
     aspectRatio,
-    twValuesClass: `w-[${baseSize * aspectRatio * scale}px] h-[${baseSize * scale}px]`,
+    twValuesClass: `w-[${baseSize * aspectRatio * scale}px] h-[${
+      baseSize * scale
+    }px]`,
   };
 };
 
@@ -96,15 +104,16 @@ export function extractLatestPercentage(logs: string) {
   return lastPercentage;
 }
 
-export function normalizePrompt(input: string): string {
-  const cleanedInput = input
-    .toLowerCase()
-    .replace(/\s+/g, " ") // Collapse multiple spaces
-    .replace(/\bemoji\b/g, "") // Remove the word "emoji"
-    .replace(/\ba\b/g, "") // Remove the word "a"
-    .trim(); // Remove extra spaces at the start and end
-  return cleanedInput;
-}
+// export function normalizePrompt(input: string): string {
+//   const cleanedInput = input
+//     .toLowerCase()
+//     .trim()
+//     .replace(/\s+/g, " ") // Collapse multiple spaces
+//     .replace(/\bemoji\b/g, "") // Remove the word "emoji"
+//     .replace(/\ba\b/g, "") // Remove the word "a"
+//     .trim(); // Remove extra spaces at the start and end
+//   return cleanedInput;
+// }
 
 export function extractPrompt(input: string): string {
   const regex = /^(?:a )?TOK emoji of (.*?),/i;

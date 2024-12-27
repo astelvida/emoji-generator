@@ -1,7 +1,7 @@
 "use server";
 
-import { eq, desc, sql, isNull, or } from "drizzle-orm";
-import { users, emojis, User, Emoji } from "./schema";
+import { eq, desc, sql, isNull, or, and } from "drizzle-orm";
+import { users, emojis, User, Emoji, likes } from "./schema";
 import { db } from ".";
 import { currentUser } from "@clerk/nextjs/server";
 import { cache } from "react";
@@ -79,16 +79,22 @@ export const getPopularEmojis = cache(
   }
 );
 
-export const getRecentEmojis = cache(
-  async (limit: number = 20, offset: number = 0): Promise<Emoji[]> => {
-    return db
-      .select()
-      .from(emojis)
-      .orderBy(desc(emojis.createdAt))
-      .limit(limit)
-      .offset(offset);
-  }
-);
+export const getRecentEmojis = async (
+  limit: number = 20,
+  offset: number = 0
+): Promise<Emoji[]> => {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  return db
+    .select({
+      ...emojis,
+    })
+    .from(emojis)
+    .orderBy(desc(emojis.createdAt))
+    .limit(limit)
+    .offset(offset);
+};
 
 export const deleteEmoji = async (id: string): Promise<void> => {
   const myHeaders = await headers();
@@ -136,8 +142,6 @@ export const searchEmojis = cache(
       )
     `;
 
-    console.log("searchVector", searchVector);
-
     return db
       .select()
       .from(emojis)
@@ -147,3 +151,73 @@ export const searchEmojis = cache(
       .offset(offset);
   }
 );
+
+// Like/Unlike emoji
+export const toggleLike = async (userId: string, emojiId: string) => {
+  const existingLike = await db
+    .select()
+    .from(likes)
+    .where(and(eq(likes.userId, userId), eq(likes.emojiId, emojiId)))
+    .limit(1);
+
+  if (existingLike.length > 0) {
+    // Unlike
+    await db
+      .delete(likes)
+      .where(and(eq(likes.userId, userId), eq(likes.emojiId, emojiId)));
+    await db
+      .update(emojis)
+      .set({ favoriteCount: sql`${emojis.favoriteCount} - 1` })
+      .where(eq(emojis.id, emojiId));
+    return false;
+  } else {
+    // Like
+    await db.insert(likes).values({ userId, emojiId });
+    await db
+      .update(emojis)
+      .set({ favoriteCount: sql`${emojis.favoriteCount} + 1` })
+      .where(eq(emojis.id, emojiId));
+    return true;
+  }
+};
+
+// Get user's liked emojis
+export const getUserLikedEmojis = async () => {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) return [];
+
+  return db
+    .select({
+      emoji: emojis,
+    })
+    .from(likes)
+    .innerJoin(emojis, eq(likes.emojiId, emojis.id))
+    .where(eq(likes.userId, userId))
+    .orderBy(desc(likes.createdAt));
+};
+
+export const getEmojiWithLikeStatus = async (
+  emojiId: string
+): Promise<{ emoji: Emoji | undefined; isLiked: boolean }> => {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  const [emoji] = await db.select().from(emojis).where(eq(emojis.id, emojiId));
+
+  if (!emoji || !userId) {
+    return { emoji, isLiked: false };
+  }
+
+  const [like] = await db
+    .select()
+    .from(likes)
+    .where(and(eq(likes.emojiId, emojiId), eq(likes.userId, userId)))
+    .limit(1);
+
+  return {
+    emoji,
+    isLiked: !!like,
+  };
+};

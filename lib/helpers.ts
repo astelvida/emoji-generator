@@ -56,6 +56,7 @@ export async function measureExecutionTime<T>(
 export const formatPrompt = (prompt: string) =>
   prompt.replace(/ /g, "-").replace(/-+/g, "-").toLocaleLowerCase();
 
-export const getRandomIndex = <T>(items: T[]) => Math.floor(Math.random() * items.length);
+export const getRandomIndex = <T>(items: T[]) =>
+  Math.floor(Math.random() * items.length);
 
 export const getRandomItem = <T>(items: T[]): T => items[getRandomIndex(items)];

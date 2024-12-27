@@ -2,7 +2,6 @@
 
 import { EMOJI_SIZE } from "@/lib/constants";
 import { WEBHOOK_URL } from "@/lib/constants";
-import { normalizePrompt } from "@/lib/utils";
 import Replicate from "replicate";
 
 const replicate = new Replicate({
@@ -31,33 +30,46 @@ Focus on the main subject and most relevant details. Include relevant keywords, 
   return result;
 }
 
-// width: 512,
-// height: 512,
-// num_inference_steps: 10,
+function normalizePrompt(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .replace(/\bemoji\b/gi, "") // Remove the word "emoji" (case insensitive)
+    .replace(/^a\s+/i, "") // Remove "a" only if it's at the start
+    .trim(); // Final trim to remove any remaining spaces
+}
 
-export async function generateEmoji({ id, prompt }: { id: string; prompt: string }) {
+export async function generateEmoji({
+  id,
+  prompt,
+}: {
+  id: string;
+  prompt: string;
+}) {
   const webhook = new URL(`${WEBHOOK_URL}/api/webhooks/remove-bg`);
   webhook.searchParams.set("id", id);
 
   const cleanedInput = normalizePrompt(prompt);
 
-  const inputPrompt = `a TOK emoji of ${cleanedInput}, white background, one main element`;
+  const inputPrompt = `A TOK emoji of a ${cleanedInput}, white background`;
 
-  console.log("inputPrompt", inputPrompt);
+  console.log("inputPrompt\n", inputPrompt);
   return replicate.predictions.create({
     version: "dee76b5afde21b0f01ed7925f0665b7e879c50ee718c5f78a9d38e04d523cc5e",
     input: {
       width: EMOJI_SIZE,
       height: EMOJI_SIZE,
       prompt: inputPrompt,
-      refine: "expert_ensemble_refiner",
+      // refine: "expert_ensemble_refiner",
+      refine: "no_refiner",
       scheduler: "K_EULER",
       lora_scale: 0.6,
       num_outputs: 1,
       guidance_scale: 7.5,
       apply_watermark: false,
-      high_noise_frac: 0.95,
-      negative_prompt: "soft, blurry, low quality, underexposed, realistic",
+      high_noise_frac: 0.8,
+      // negative_prompt: "soft, blurry, low quality, underexposed, realistic",
       prompt_strength: 0.8,
       num_inference_steps: 50,
       disable_safety_checker: true,

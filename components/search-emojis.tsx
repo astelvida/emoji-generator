@@ -1,7 +1,7 @@
 import { Skeleton } from "./ui/skeleton";
 import EmojiCardList from "./emoji-card-list";
 // import { searchEmojis } from "@/db/search-emojis";
-import { searchEmojis } from "@/db/queries";
+import { getRecentEmojis, searchEmojis } from "@/db/queries";
 
 interface EmojisGridProps {
   query?: string | undefined;
@@ -10,7 +10,7 @@ interface EmojisGridProps {
 // Cache the data fetching functions
 
 export async function SearchEmojisGrid({ query }: EmojisGridProps) {
-  const emojis = await searchEmojis(query || "");
+  const emojis = query ? await searchEmojis(query) : await getRecentEmojis();
 
   return (
     <section className="mt-4">

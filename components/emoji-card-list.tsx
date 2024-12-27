@@ -1,12 +1,22 @@
 import { Button } from "./ui/button";
-import { Trash } from "lucide-react";
+import { Trash, Heart } from "lucide-react";
 import Link from "next/link";
-import { deleteEmoji } from "@/db/queries";
+import { deleteEmoji, toggleLike } from "@/db/queries";
 import { Emoji } from "@/db/schema";
+import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
-export default function EmojiCardList({ emoji }: { emoji: Emoji }) {
+interface EmojiCardListProps {
+  emoji: Emoji;
+  isLiked?: boolean;
+}
+
+export default function EmojiCardList({
+  emoji,
+  isLiked = false,
+}: EmojiCardListProps) {
   return (
-    <div className="relative">
+    <div className="relative group">
       <Link href={`/emoji/${emoji.id}`}>
         <img
           src={emoji.imageUrl}
@@ -17,22 +27,52 @@ export default function EmojiCardList({ emoji }: { emoji: Emoji }) {
           loading="lazy"
         />
       </Link>
-      <p className="absolute bottom-2 left-2 text-xs text-muted-foreground">{emoji.prompt}</p>
-      <form>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="absolute top-2 right-2"
-          formAction={async () => {
-            "use server";
-            await deleteEmoji(emoji.id);
-          }}
-          disabled={!emoji.imageUrl}
-        >
-          <Trash className="h-5 w-5" />
-          <span className="sr-only">Delete</span>
-        </Button>
-      </form>
+      <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">{emoji.prompt}</p>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-muted-foreground">
+            {emoji.favoriteCount || 0}
+          </span>
+        </div>
+      </div>
+      <div className="absolute top-2 right-2 flex gap-2">
+        <form>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="hover:bg-background/80 hover:text-primary"
+            formAction={async () => {
+              "use server";
+              const user = await currentUser();
+              if (!user) return;
+              await toggleLike(user.id, emoji.id);
+              revalidatePath("/");
+            }}
+          >
+            <Heart
+              className={`h-5 w-5 ${
+                isLiked ? "fill-primary text-primary" : ""
+              }`}
+            />
+            <span className="sr-only">{isLiked ? "Unlike" : "Like"}</span>
+          </Button>
+        </form>
+        <form>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="hover:bg-destructive/80 hover:text-destructive"
+            formAction={async () => {
+              "use server";
+              await deleteEmoji(emoji.id);
+            }}
+            disabled={!emoji.imageUrl}
+          >
+            <Trash className="h-5 w-5" />
+            <span className="sr-only">Delete</span>
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

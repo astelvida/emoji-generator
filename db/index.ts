@@ -9,8 +9,7 @@
 
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
-import { neonConfig } from "@neondatabase/serverless";
+import { neon, neonConfig } from "@neondatabase/serverless";
 
 import ws from "ws";
 neonConfig.webSocketConstructor = ws;

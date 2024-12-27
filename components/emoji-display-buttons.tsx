@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Heart, MoreHorizontal, Download, Copy, Flag, Trash, Trash2 } from "lucide-react";
+import {
+  Heart,
+  MoreHorizontal,
+  Download,
+  Copy,
+  Flag,
+  Trash,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,22 +20,30 @@ import { downloadImageWithFilename } from "@/lib/browser-utils";
 import { copyToClipboard } from "@/lib/browser-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "./ui/skeleton";
-import { deleteEmoji } from "@/db/queries";
+import { deleteEmoji, toggleLike } from "@/db/queries";
+import { set } from "zod";
+import { useState } from "react";
 
 export function EmojiDisplayButtons({
   imageUrl,
   id,
   slug,
+  userId,
+  isLikedByUser,
 }: {
   imageUrl: string | null;
   id: string;
   slug: string;
+  userId: string;
+  isLikedByUser: boolean;
 }) {
   const { toast } = useToast();
 
-  const [isLiked, setIsLiked] = useState(false);
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  const [isLiked, setIsLiked] = useState(isLikedByUser);
+
+  const handleLike = async () => {
+    const newIsLiked = await toggleLike(userId, id);
+    setIsLiked(newIsLiked);
   };
 
   return (
@@ -45,7 +59,12 @@ export function EmojiDisplayButtons({
         <span className="sr-only">Like</span>
       </Button>
 
-      <Button size="icon" variant="ghost" onClick={() => deleteEmoji(id)} disabled={!imageUrl}>
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => deleteEmoji(id)}
+        disabled={!imageUrl}
+      >
         <Trash className="h-5 w-5" />
         <span className="sr-only">Delete</span>
       </Button>
@@ -81,11 +100,9 @@ export function EmojiDisplayButtons({
             onClick={() =>
               copyToClipboard(imageUrl || "")
                 .then(() =>
-                  toast({
-                    description: "Copied emoji to clipboard!",
-                  })
+                  toast({ description: "Copied emoji to clipboard!" })
                 )
-                .catch((e) =>
+                .catch(() =>
                   toast({
                     description: "Couldn't copy emoji to clipboard :(",
                   })

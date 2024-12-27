@@ -7,6 +7,7 @@ import {
   json,
   pgTable,
   uuid,
+  index,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -48,16 +49,27 @@ export const emojis = pgTable("emojis", {
 
 // prettier-ignore
 // Likes table
-export const likes = pgTable("likes", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: varchar("user_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  emojiId: varchar("emoji_id")
-    .references(() => emojis.id, { onDelete: "cascade" })
-    .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const likes = pgTable(
+  "likes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    
+
+    userId: varchar("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    emojiId: varchar("emoji_id")
+      .references(() => emojis.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdEmojiIdIdx: index("likes_userId_emojiId_idx").on(
+      table.userId,
+      table.emojiId
+    ),
+  })
+);
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -73,6 +85,16 @@ export const emojisRelations = relations(emojis, ({ one, many }) => ({
   likes: many(likes),
 }));
 
+export const likesRelations = relations(likes, ({ one }) => ({
+  user: one(users, {
+    fields: [likes.userId],
+    references: [users.id],
+  }),
+  emoji: one(emojis, {
+    fields: [likes.emojiId],
+    references: [emojis.id],
+  }),
+}));
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

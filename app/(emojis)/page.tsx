@@ -1,15 +1,15 @@
 import { EmojiForm } from "@/components/emoji-form";
 import { EmojiCount } from "@/components/emoji-count";
-import { ExploreEmojisGrid } from "@/components/explore-emojis";
+import { EmojisGrid } from "@/components/emoji-grid";
 import { currentUser } from "@clerk/nextjs/server";
 import { createUser } from "@/db/queries";
-import { getUserById } from "@/db/queries";
+import { getUserById, getUserLikedEmojis } from "@/db/queries";
 
 export default async function HomePage() {
   const currUser = await currentUser();
   const user = await getUserById(currUser?.id || "");
 
-  if (!user) {
+  if (!user && currUser) {
     console.log("user not found");
     console.log("currUser:", currUser);
     const newUser = await createUser({
@@ -25,6 +25,10 @@ export default async function HomePage() {
     console.log("user found");
   }
 
+  const likedEmojis = await getUserLikedEmojis();
+
+  console.log("likedEmojis:", likedEmojis);
+
   return (
     <>
       <div className="mb-12 text-center">
@@ -35,7 +39,7 @@ export default async function HomePage() {
         <EmojiForm />
       </section>
 
-      <ExploreEmojisGrid />
+      <EmojisGrid likedEmojis={likedEmojis} />
     </>
   );
 }
