@@ -1,0 +1,65 @@
+"use client";
+
+import { SearchIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { useDebouncedCallback } from "use-debounce";
+import { useRef, useTransition } from "react";
+
+export function EmojiSearch({ placeholder }: { placeholder: string }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace, push } = useRouter();
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [pending, startTransition] = useTransition();
+  const query = searchParams.get("query")?.toString() || "";
+
+  const handleSearch = useDebouncedCallback((term: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (term) {
+      params.set("query", term);
+    } else {
+      params.delete("query");
+    }
+    startTransition(() => {
+      if (pathname === "/search") {
+        replace(`${pathname}?${params.toString()}`);
+      } else {
+        push(`/search?${params.toString()}`);
+      }
+    });
+  }, 300);
+
+  return (
+    <div className="relative px-4 pb-4" key={pathname}>
+      <label htmlFor="search" className="sr-only">
+        Search
+      </label>
+      <Input
+        ref={searchInputRef}
+        id="search"
+        defaultValue={query}
+        type="search"
+        name="query"
+        className="pl-10 h-12 text-lg rounded-lg border-muted-foreground/20"
+        placeholder={placeholder}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          if (pathname === "/search") {
+            handleSearch(e.target.value.trim());
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            if (pathname === "/search") return;
+            e.preventDefault();
+            handleSearch(e.currentTarget.value.trim());
+          }
+        }}
+      />
+      <SearchIcon className="absolute left-7 top-3 size-5 text-muted-foreground" />
+    </div>
+  );
+}

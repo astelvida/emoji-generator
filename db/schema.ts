@@ -1,11 +1,12 @@
-import { sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   text,
   timestamp,
   varchar,
   integer,
-  uniqueIndex,
+  json,
   pgTable,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -19,55 +20,63 @@ export const users = pgTable("users", {
 
 // const status = pgEnum("status", ["generating", "generated"]);
 // prettier-ignore
-export const emojis = pgTable(
-  "emojis",
-  {
-    id: varchar("id").primaryKey(),
-    prompt: text("prompt").notNull(),
-    slug: text("slug"),
-    originalUrl: text("original_url"),
-    imageUrl: text("image_url"),
+export const emojis = pgTable("emojis", {
+  id: varchar("id").primaryKey(),
+  
+  prompt: text("prompt").notNull(),
+  slug: text("slug"),
+  originalUrl: text("original_url"),
+  imageUrl: text("image_url"),
 
-    caption: text("caption"),
-    description: text("description"),
-    categories: text("categories")
-      .array()
-      .default(sql`ARRAY[]::text[]`),
-    keywords: text("keywords")
-      .array()
-      .default(sql`ARRAY[]::text[]`),
+  caption: text("caption"),
+  description: text("description"),
+  categories: json("categories").$type<string[]>().default([]),
+  keywords: json("keywords").$type<string[]>().default([]),
 
-    status: text("status").default("generating"),
-    favoriteCount: integer("favorite_count").default(0),
-    userId: varchar("user_id")
-      .references(() => users.id)
-      .notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
+  status: text("status").default("generating"),
+  favoriteCount: integer("favorite_count").default(0),
 
-);
+
+  userId: varchar("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 // .where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
 
 // prettier-ignore
-export const likes = pgTable(
-  "likes",
-  {
-    id: varchar("id").primaryKey(),
-    userId: varchar("user_id").references(() => users.id).notNull(),
-    emojiId: varchar("emoji_id").references(() => emojis.id).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (likes) => ({
-    userEmojiIndex: uniqueIndex("user_emoji_idx").on(likes.userId, likes.emojiId),
-  })
-);
+// Likes table
+export const likes = pgTable("likes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  emojiId: varchar("emoji_id")
+    .references(() => emojis.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  emojis: many(emojis),
+  likes: many(likes),
+}));
+
+export const emojisRelations = relations(emojis, ({ one, many }) => ({
+  user: one(users, {
+    fields: [emojis.userId],
+    references: [users.id],
+  }),
+  likes: many(likes),
+}));
+
+// Types
 export type User = typeof users.$inferSelect;
-export type Emoji = typeof emojis.$inferSelect;
-export type Like = typeof likes.$inferSelect;
-
 export type NewUser = typeof users.$inferInsert;
+export type Emoji = typeof emojis.$inferSelect;
 export type NewEmoji = typeof emojis.$inferInsert;
+export type Like = typeof likes.$inferSelect;
 export type NewLike = typeof likes.$inferInsert;

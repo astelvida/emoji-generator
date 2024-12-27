@@ -17,6 +17,11 @@ export async function getUser() {
   return user;
 }
 
+export const getUserById = async (id: string): Promise<User | undefined> => {
+  const [user] = await db.select().from(users).where(eq(users.id, id));
+  return user;
+};
+
 // User queries
 export const createUser = async (user: User): Promise<User> => {
   const [newUser] = await db
@@ -103,3 +108,42 @@ export const deleteEmojisWithNoURL = async () => {
     .delete(emojis)
     .where(or(isNull(emojis.description), isNull(emojis.imageUrl)));
 };
+
+export const searchEmojis = cache(
+  async (query: string, limit: number = 20, offset: number = 0) => {
+    const searchQuery = query
+      .trim()
+      .split(/\s+/)
+      .map((term) => `${term}:*`)
+      .join(" | ");
+
+    console.log("searchQuery", searchQuery);
+
+    if (!searchQuery) return [];
+
+    const searchVector = sql`
+      to_tsvector('english', 
+        coalesce(${emojis.prompt}, '') || ' ' || 
+        coalesce(${emojis.description}, '') || ' ' || 
+        coalesce((
+          select string_agg(value::text, ' ')
+          from jsonb_array_elements_text(${emojis.categories}::jsonb)
+        ), '') || ' ' || 
+        coalesce((
+          select string_agg(value::text, ' ')
+          from jsonb_array_elements_text(${emojis.keywords}::jsonb)
+        ), '')
+      )
+    `;
+
+    console.log("searchVector", searchVector);
+
+    return db
+      .select()
+      .from(emojis)
+      .where(sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`)
+      .orderBy(desc(emojis.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+);

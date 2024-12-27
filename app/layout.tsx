@@ -8,6 +8,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,23 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ClerkProvider
-        appearance={{
-          variables: { colorPrimary: "#ff0afa" },
-          elements: {
-            formButtonPrimary:
-              "bg-black border border-black border-solid hover:bg-white hover:text-black",
-            socialButtonsBlockButton:
-              "bg-white border-gray-200 hover:bg-transparent hover:border-black text-gray-600 hover:text-black",
-            socialButtonsBlockButtonText: "font-semibold",
-            formButtonReset:
-              "bg-white border border-solid border-gray-200 hover:bg-transparent hover:border-black text-gray-500 hover:text-black",
-            membersPageInviteButton:
-              "bg-black border border-black border-solid hover:bg-white hover:text-black",
-            card: "bg-[#ff0afa]",
-          },
-        }}
-      >
+      <ClerkProvider>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
@@ -60,6 +45,7 @@ export default function RootLayout({
             </SignedIn>
           </header>
           {children}
+          <Toaster />
         </body>
       </ClerkProvider>
     </html>

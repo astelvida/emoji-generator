@@ -7,7 +7,6 @@ export default defineConfig({
   schema: "./db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
-  // tablesFilter: ["emojis_*"],
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
