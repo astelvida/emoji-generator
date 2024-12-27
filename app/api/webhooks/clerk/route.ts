@@ -84,6 +84,8 @@ export async function POST(req: Request) {
     console.log("userId:", evt.data.id);
     console.log("payload:", JSON.stringify(payload, null, 2));
 
+    console.log("user:", JSON.stringify(evt.data, null, 2));
+
     const user = evt.data;
 
     const userInfo = {
@@ -91,10 +93,13 @@ export async function POST(req: Request) {
       name:
         `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
         "Horse With No Name",
-      email: user.email_addresses[0]?.email_address,
+      email: user.email_addresses.find(
+        (email) => email.id === user.primary_email_address_id
+      )?.email_address,
       username: user.username,
       imageUrl: user.image_url,
     };
+
     const newUser = await createUser(userInfo);
 
     console.log("CREATE NEW USER:", newUser.id, newUser.name, newUser.email);

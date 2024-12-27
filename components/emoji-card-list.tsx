@@ -3,7 +3,6 @@ import { Trash, Heart } from "lucide-react";
 import Link from "next/link";
 import { deleteEmoji, toggleLike } from "@/db/queries";
 import { Emoji } from "@/db/schema";
-import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 interface EmojiCardListProps {
@@ -14,6 +13,7 @@ interface EmojiCardListProps {
 export default function EmojiCardList({
   emoji,
   isLiked = false,
+  index,
 }: EmojiCardListProps) {
   return (
     <li className="relative isolate hover:bg-muted/50 transition-colors ease-out duration-300 rounded-xl overflow-hidden select-none">
@@ -33,6 +33,7 @@ export default function EmojiCardList({
           <span className="text-xs text-muted-foreground">
             {emoji.favoriteCount || 0}
           </span>
+          <span className="text-xs text-muted-foreground">{index + 1}</span>
         </div>
       </div>
       <div className="absolute top-2 right-2 flex">
@@ -58,6 +59,7 @@ export default function EmojiCardList({
             className="h-6 w-6"
             formAction={async () => {
               "use server";
+
               const newIsLiked = await toggleLike(emoji.userId, emoji.id);
               revalidatePath("/");
               // return newIsLiked;

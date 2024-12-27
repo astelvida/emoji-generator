@@ -32,9 +32,7 @@ export async function EmojiCard({
       <div className="flex flex-row flex-nowrap items-start justify-between">
         <h1 className="text-2xl font-bold">{emoji?.prompt}</h1>
       </div>
-      {/* <div className="flex flex-row justify-between space-x-4"> */}
       <EmojiDisplayImage imageUrl={emoji.imageUrl} prompt={emoji.prompt} />
-      {/* </div> */}
       <EmojiActionButtons
         userId={emoji.userId}
         imageUrl={emoji.imageUrl}

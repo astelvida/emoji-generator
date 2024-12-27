@@ -70,7 +70,7 @@ export const getEmojiCount = async (): Promise<number> => {
 };
 
 export const getPopularEmojis = cache(
-  async (limit: number = 20, offset: number = 0): Promise<Emoji[]> => {
+  async (limit: number = 200, offset: number = 0): Promise<Emoji[]> => {
     return db
       .select()
       .from(emojis)
@@ -81,7 +81,7 @@ export const getPopularEmojis = cache(
 );
 
 export const getRecentEmojis = cache(
-  async (limit: number = 20, offset: number = 0): Promise<Emoji[]> => {
+  async (limit: number = 200, offset: number = 0): Promise<Emoji[]> => {
     return db
       .select()
       .from(emojis)
@@ -110,19 +110,24 @@ export const deleteEmojisWithNoURL = async () => {
     .where(or(isNull(emojis.description), isNull(emojis.imageUrl)));
 };
 
-export const searchEmojis = cache(
-  async (query: string, limit: number = 20, offset: number = 0) => {
-    const searchQuery = query
-      .trim()
-      .split(/\s+/)
-      .map((term) => `${term}:*`)
-      .join(" | ");
+export const searchEmojis = async (
+  query: string,
+  limit: number = 200,
+  offset: number = 0
+) => {
+  const searchQuery = query
+    .trim()
+    .split(/\s+/)
+    .map((term) => term.replace(/[^\w\s]/g, "")) // Remove special characters
+    .filter(Boolean) // Remove empty strings
+    .map((term) => `${term}:*`) // Add prefix matching
+    .join(" | "); // Use AND operation
 
-    console.log("searchQuery", searchQuery);
+  console.log("searchQuery", searchQuery);
 
-    if (!searchQuery) return [];
+  if (!searchQuery) return [];
 
-    const searchVector = sql`
+  const searchVector = sql`
       to_tsvector('english', 
         coalesce(${emojis.prompt}, '') || ' ' || 
         coalesce(${emojis.description}, '') || ' ' || 
@@ -137,52 +142,54 @@ export const searchEmojis = cache(
       )
     `;
 
-    return db
-      .select()
-      .from(emojis)
-      .where(sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`)
-      .orderBy(desc(emojis.createdAt))
-      .limit(limit)
-      .offset(offset);
-  }
-);
+  return db
+    .select()
+    .from(emojis)
+    .where(sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`)
+    .orderBy(desc(emojis.createdAt))
+    .limit(limit)
+    .offset(offset);
+};
 
-export const getRelatedEmojis = cache(
-  async (
-    emojiId: string,
-    query: string,
-    limit: number = 20,
-    offset: number = 0
-  ) => {
-    const searchQuery = query
-      .trim()
-      .split(/\s+/)
-      .map((term) => `${term}:*`)
-      .join(" | ");
+export const getRelatedEmojis = async (
+  emojiId: string,
+  query: string,
+  limit: number = 200,
+  offset: number = 0
+) => {
+  // const searchQuery = query
+  //   .trim()
+  //   .split(/\s+/)
+  //   .map((term) => `${term}:*`)
+  //   .join(" | ");
 
-    console.log("searchQuery", searchQuery);
+  const searchQuery = query
+    .trim()
+    .split(/\s+/)
+    .map((term) => term.replace(/[^\w\s]/g, "")) // Remove special characters
+    .filter(Boolean) // Remove empty strings
+    .map((term) => `${term}:*`) // Add prefix matching
+    .join(" | "); // Use AND operation
 
-    if (!searchQuery) return [];
+  console.log("RELEVANT QUERY§", searchQuery);
 
-    const searchVector = sql`
-      to_tsvector('english', 
-        coalesce(${emojis.prompt}, '') || ' '
+  if (!searchQuery) return [];
+
+  const searchVector = sql`to_tsvector('english',  coalesce(${emojis.prompt}, '') || ' ')
+ `;
+  return db
+    .select()
+    .from(emojis)
+    .where(
+      and(
+        sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`,
+        ne(emojis.id, emojiId)
       )
-    `;
-    return db
-      .select()
-      .from(emojis)
-      .where(
-        and(
-          sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`,
-          ne(emojis.id, emojiId)
-        )
-      )
-      .orderBy(desc(emojis.createdAt))
-      .limit(limit)
-      .offset(offset);
-  }
-);
+    )
+    .orderBy(desc(emojis.createdAt))
+    .limit(limit)
+    .offset(offset);
+};
 
 // Like/Unlike emoji
 export const toggleLike = async (userId: string, emojiId: string) => {

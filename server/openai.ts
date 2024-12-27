@@ -26,8 +26,10 @@ export async function generateEmojiInfo(imageUrl: string, prompt: string) {
   if (!imageUrl) throw new Error("Image URL is required");
   if (!prompt) throw new Error("Prompt is required");
 
+  console.log("GEBERATE EMOJI INFO:", prompt);
+
   const completion = await openai.beta.chat.completions.parse({
-    model: "gpt-4o-2024-08-06",
+    model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
@@ -51,15 +53,19 @@ export async function generateEmojiInfo(imageUrl: string, prompt: string) {
   });
 
   const parsed = completion.choices[0].message.parsed;
-  console.log(parsed);
   return parsed;
 }
 
-export async function generateEmojiNames(category?: string, total: number = 40) {
+export async function generateEmojiNames(
+  category?: string,
+  total: number = 40
+) {
   if (!category) throw new Error("Category is required");
 
   const prompt = `
-Generate ${total} new emoji names in the category: ${category || "any category"}.
+Generate ${total} new emoji names in the category: ${
+    category || "any category"
+  }.
 Be descriptive and combine current emoji names. Add details such as color, mood, activity, etc.
 Return only the names lowercase, no other text.
 Examples: "woman with curly hair with baby", "two girls eating aubergine", "poodle with sad smile and big eyes".

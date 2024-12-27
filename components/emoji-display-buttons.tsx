@@ -41,8 +41,9 @@ export function EmojiDisplayButtons({
   const [isLiked, setIsLiked] = useState(isLikedByUser);
 
   const handleLike = async () => {
+    setIsLiked(!isLiked);
     const newIsLiked = await toggleLike(userId, id);
-    setIsLiked(newIsLiked);
+    // setIsLiked(newIsLiked);
   };
 
   return (

@@ -24,16 +24,21 @@ export async function EmojisGrid({ emojiId, query }: EmojisGridProps) {
 
   // Extract just the emoji IDs that the user has liked
   const likedEmojiIds = new Set(likedEmojis.map(({ emoji }) => emoji.id));
+
   return (
-    <ul className="grid w-full auto-rows-max place-content-stretch justify-items-stretch grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      {emojis.map((emoji) => (
-        <EmojiCardList
-          emoji={emoji}
-          key={emoji.id}
-          isLiked={likedEmojiIds.has(emoji.id)}
-        />
-      ))}
-    </ul>
+    <>
+      <h2> LENGHT {emojis.length}</h2>
+      <ul className="grid w-full auto-rows-max place-content-stretch justify-items-stretch grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {emojis.map((emoji, index) => (
+          <EmojiCardList
+            index={index}
+            emoji={emoji}
+            key={emoji.id}
+            isLiked={likedEmojiIds.has(emoji.id)}
+          />
+        ))}
+      </ul>
+    </>
   );
 }
 

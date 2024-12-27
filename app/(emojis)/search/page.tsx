@@ -1,4 +1,5 @@
-import { SearchEmojisGrid } from "@/components/search-emojis";
+import { EmojisGrid, EmojisGridSkeleton } from "@/components/emoji-grid";
+import { Suspense } from "react";
 
 export default async function SearchPage({
   searchParams,
@@ -7,5 +8,11 @@ export default async function SearchPage({
 }) {
   const { query } = await searchParams;
 
-  return <SearchEmojisGrid query={query} key={query} />;
+  return (
+    <section className="mt-4">
+      <Suspense fallback={<EmojisGridSkeleton />}>
+        <EmojisGrid query={query} />
+      </Suspense>
+    </section>
+  );
 }

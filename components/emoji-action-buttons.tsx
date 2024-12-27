@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Shuffle } from "lucide-react";
+import { Loader2, Share2, Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { generateStart } from "@/server/actions";
@@ -71,7 +71,11 @@ export function EmojiActionButtons({
             setIsRemixing(false);
           }}
         >
-          <Shuffle className="mr-2 h-5 w-5" />
+          {isRemixing ? (
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          ) : (
+            <Shuffle className="mr-2 h-5 w-5" />
+          )}
           {isRemixing ? "Remixing..." : "Remix"}
         </Button>
       </form>

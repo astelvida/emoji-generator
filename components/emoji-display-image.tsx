@@ -32,34 +32,6 @@ export function EmojiDisplayImage({
   return (
     <>
       <div className="relative aspect-square w-full flex-1 self-center rounded-lg">
-        {/* {!imageUrl ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-200">
-            <div className="flex items-center space-x-2">
-              <Loader2 className="w-8 h-8 animate-spin" />
-              <span className="text-lg font-semibold">GENERATING...</span>
-            </div>
-          </div>
-        ) : (
-          <img
-            src={imageUrl}
-            alt={prompt}
-            width={768}
-            height={768}
-            className="aspect-square object-contain"
-            // priority
-            onLoad={() => {
-              if (isFirstLoad) {
-                setIsFirstLoad(false);
-                confetti({
-                  particleCount: 100,
-                  spread: 70,
-                  origin: { y: 0.6 },
-                });
-              }
-            }}
-          />
-        )} */}
-
         {imageUrl && (
           <img
             src={imageUrl}
@@ -88,9 +60,9 @@ export function EmojiDisplayImage({
           )}
         >
           <div className="flex items-center space-x-2">
-            <p className="text-balance text-center text-xl font-medium">
+            <span className="text-balance text-center text-xl font-medium">
               Generating...
-            </p>
+            </span>
             <Loader className="w-8 h-8 animate-spin" />
           </div>
         </div>

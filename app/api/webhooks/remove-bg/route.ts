@@ -40,17 +40,27 @@ export async function POST(req: Request) {
     // convert output to a blob object
     async function uploadOriginal() {
       const originalFile = await fetch(output[0]).then((res) => res.blob());
-      const { url: originalUrl } = await put(`${slug}-original.png`, originalFile, {
-        access: "public",
-      });
+      const { url: originalUrl } = await put(
+        `${slug}-original.png`,
+        originalFile,
+        {
+          access: "public",
+        }
+      );
       return originalUrl;
     }
 
     async function uploadNoBackground() {
-      const noBackgroundFile = await fetch(rmbgOutput.toString()).then((res) => res.blob());
-      const { url: noBackgroundUrl } = await put(`${slug}-no-background.png`, noBackgroundFile, {
-        access: "public",
-      });
+      const noBackgroundFile = await fetch(rmbgOutput.toString()).then((res) =>
+        res.blob()
+      );
+      const { url: noBackgroundUrl } = await put(
+        `${slug}-no-background.png`,
+        noBackgroundFile,
+        {
+          access: "public",
+        }
+      );
       return noBackgroundUrl;
     }
 
@@ -59,7 +69,7 @@ export async function POST(req: Request) {
       uploadNoBackground(),
     ]);
 
-    const emojiInfo = await generateEmojiInfo(noBackgroundUrl, prompt);
+    const emojiInfo = await generateEmojiInfo(noBackgroundUrl, cleanedPrompt);
 
     // update emoji
     const finalEmoji = await updateEmoji(id, {

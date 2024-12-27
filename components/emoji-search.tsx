@@ -11,14 +11,13 @@ import { useRef, useTransition } from "react";
 export function EmojiSearch({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { replace, push } = useRouter();
+  const router = useRouter();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
-  const query = searchParams.get("query")?.toString() || "";
 
   const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams);
     if (term) {
       params.set("query", term);
     } else {
@@ -26,9 +25,9 @@ export function EmojiSearch({ placeholder }: { placeholder: string }) {
     }
     startTransition(() => {
       if (pathname === "/search") {
-        replace(`${pathname}?${params.toString()}`);
+        router.replace(`/search?${params.toString()}`, { scroll: false });
       } else {
-        push(`/search?${params.toString()}`);
+        router.push(`/search?${params.toString()}`, { scroll: false });
       }
     });
   }, 300);
@@ -41,7 +40,7 @@ export function EmojiSearch({ placeholder }: { placeholder: string }) {
       <Input
         ref={searchInputRef}
         id="search"
-        defaultValue={query}
+        defaultValue={searchParams.get("query")?.toString()}
         type="search"
         name="query"
         className="pl-10 h-12 text-lg rounded-lg border-muted-foreground/20"
