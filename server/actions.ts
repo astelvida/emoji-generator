@@ -8,7 +8,16 @@ import { redirect } from "next/navigation";
 export async function generateStart(prompt: string) {
   const id = nanoid();
 
-  await Promise.all([createEmoji({ id, prompt }), generateEmoji({ id, prompt })]);
+  try {
+    await Promise.all([
+      createEmoji({ id, prompt }),
+      generateEmoji({ id, prompt }),
+    ]);
+  } catch (error) {
+    console.error("Error generating emoji:", error);
+    throw error;
+  }
+
   // return id;
   redirect(`/emoji/${id}`);
 }

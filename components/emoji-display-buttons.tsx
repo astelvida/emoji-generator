@@ -21,7 +21,6 @@ import { copyToClipboard } from "@/lib/browser-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import { deleteEmoji, toggleLike } from "@/db/queries";
-import { set } from "zod";
 import { useState } from "react";
 
 export function EmojiDisplayButtons({

@@ -18,7 +18,7 @@ export async function EmojiCard({
   // const emoji = await getEmoji(id);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col flex-nowrap space-y-4">
+    <div className="mx-auto flex w-full max-w-sm flex-col flex-nowrap justify-center space-y-2">
       <div className="flex items-center justify-between">
         <EmojiDisplayUser />
         <EmojiDisplayButtons
@@ -29,7 +29,9 @@ export async function EmojiCard({
           slug={emoji.slug ?? ""}
         />
       </div>
-      <p className="text-3xl font-bold">{emoji?.prompt}</p>
+      <div className="flex flex-row flex-nowrap items-start justify-between">
+        <h1 className="text-2xl font-bold">{emoji?.prompt}</h1>
+      </div>
       {/* <div className="flex flex-row justify-between space-x-4"> */}
       <EmojiDisplayImage imageUrl={emoji.imageUrl} prompt={emoji.prompt} />
       {/* </div> */}

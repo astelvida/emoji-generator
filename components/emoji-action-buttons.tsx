@@ -9,7 +9,11 @@ import type { Emoji } from "@/db/schema";
 
 type EmojiActionButtonsProps = Partial<Emoji>;
 
-export function EmojiActionButtons({ imageUrl, prompt, id }: EmojiActionButtonsProps) {
+export function EmojiActionButtons({
+  imageUrl,
+  prompt,
+  id,
+}: EmojiActionButtonsProps) {
   const [isRemixing, setIsRemixing] = useState(false);
   const { toast } = useToast();
 
@@ -54,35 +58,23 @@ export function EmojiActionButtons({ imageUrl, prompt, id }: EmojiActionButtonsP
     }
   };
 
-  const handleRemix = async () => {
-    if (!prompt) return;
-
-    setIsRemixing(true);
-    try {
-      await generateStart(prompt);
-    } catch (error) {
-      console.error("Error remixing:", error);
-      toast({
-        title: "Remix failed",
-        description: "Unable to create a new emoji. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRemixing(false);
-    }
-  };
-
   return (
     <div className="grid grid-cols-2 gap-4 justify-center">
-      <Button
-        variant="secondary"
-        className="w-full py-6 text-base font-medium"
-        onClick={handleRemix}
-        disabled={isRemixing || !imageUrl}
-      >
-        <Shuffle className="mr-2 h-5 w-5" />
-        {isRemixing ? "Remixing..." : "Remix"}
-      </Button>
+      <form className="relative">
+        <Button
+          variant="secondary"
+          className="w-full py-6 text-base font-medium"
+          disabled={isRemixing || !imageUrl}
+          formAction={async () => {
+            setIsRemixing(true);
+            await generateStart(prompt);
+            setIsRemixing(false);
+          }}
+        >
+          <Shuffle className="mr-2 h-5 w-5" />
+          {isRemixing ? "Remixing..." : "Remix"}
+        </Button>
+      </form>
       <Button
         variant="secondary"
         className="w-full py-6 text-base font-medium"

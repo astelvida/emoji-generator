@@ -8,8 +8,13 @@ export async function EmojiDisplayUser() {
   return (
     <div className="flex items-center gap-2">
       <Avatar className="h-8 w-8">
-        <AvatarImage src={creator?.imageUrl || "/placeholder.svg"} alt={creator?.name} />
-        <AvatarFallback>{creator?.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+        <AvatarImage
+          src={creator?.imageUrl || "/placeholder.svg"}
+          alt={creator?.name}
+        />
+        <AvatarFallback>
+          {creator?.name?.[0]?.toUpperCase() || "U"}
+        </AvatarFallback>
       </Avatar>
       <span className="text-sm font-medium">@{creator?.name}</span>
     </div>

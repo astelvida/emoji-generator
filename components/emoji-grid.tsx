@@ -1,16 +1,20 @@
-import { getRecentEmojis, getUserLikedEmojis } from "@/db/queries";
+import {
+  getRecentEmojis,
+  getUserLikedEmojis,
+  searchEmojis,
+} from "@/db/queries";
 import { Skeleton } from "./ui/skeleton";
 import EmojiCardList from "./emoji-card-list";
-import { currentUser } from "@clerk/nextjs";
 
 interface EmojisGridProps {
   emojiId?: string | undefined;
+  query?: string | undefined;
 }
 
-export async function EmojisGrid({ emojiId }: EmojisGridProps) {
+export async function EmojisGrid({ emojiId, query }: EmojisGridProps) {
   const title = "Recent emojis";
   const [emojis, likedEmojis] = await Promise.all([
-    getRecentEmojis(),
+    query ? searchEmojis(query) : getRecentEmojis(),
     getUserLikedEmojis(),
   ]);
 

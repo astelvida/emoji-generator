@@ -46,6 +46,7 @@ export const createEmoji = async (emoji: Partial<Emoji>): Promise<Emoji> => {
     .insert(emojis)
     .values({ ...emoji, userId: user.id })
     .returning();
+
   return newEmoji;
 };
 
@@ -79,22 +80,16 @@ export const getPopularEmojis = cache(
   }
 );
 
-export const getRecentEmojis = async (
-  limit: number = 20,
-  offset: number = 0
-): Promise<Emoji[]> => {
-  const user = await currentUser();
-  const userId = user?.id;
-
-  return db
-    .select({
-      ...emojis,
-    })
-    .from(emojis)
-    .orderBy(desc(emojis.createdAt))
-    .limit(limit)
-    .offset(offset);
-};
+export const getRecentEmojis = cache(
+  async (limit: number = 20, offset: number = 0): Promise<Emoji[]> => {
+    return db
+      .select()
+      .from(emojis)
+      .orderBy(desc(emojis.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+);
 
 export const deleteEmoji = async (id: string): Promise<void> => {
   const myHeaders = await headers();
@@ -182,7 +177,7 @@ export const toggleLike = async (userId: string, emojiId: string) => {
 };
 
 // Get user's liked emojis
-export const getUserLikedEmojis = async () => {
+export const getUserLikedEmojis = cache(async () => {
   const user = await currentUser();
   const userId = user?.id;
 
@@ -196,28 +191,33 @@ export const getUserLikedEmojis = async () => {
     .innerJoin(emojis, eq(likes.emojiId, emojis.id))
     .where(eq(likes.userId, userId))
     .orderBy(desc(likes.createdAt));
-};
+});
 
-export const getEmojiWithLikeStatus = async (
-  emojiId: string
-): Promise<{ emoji: Emoji | undefined; isLiked: boolean }> => {
-  const user = await currentUser();
-  const userId = user?.id;
+export const getEmojiWithLikeStatus = cache(
+  async (
+    emojiId: string
+  ): Promise<{ emoji: Emoji | undefined; isLiked: boolean }> => {
+    const user = await currentUser();
+    const userId = user?.id;
 
-  const [emoji] = await db.select().from(emojis).where(eq(emojis.id, emojiId));
+    const [emoji] = await db
+      .select()
+      .from(emojis)
+      .where(eq(emojis.id, emojiId));
 
-  if (!emoji || !userId) {
-    return { emoji, isLiked: false };
+    if (!emoji || !userId) {
+      return { emoji, isLiked: false };
+    }
+
+    const [like] = await db
+      .select()
+      .from(likes)
+      .where(and(eq(likes.emojiId, emojiId), eq(likes.userId, userId)))
+      .limit(1);
+
+    return {
+      emoji,
+      isLiked: !!like,
+    };
   }
-
-  const [like] = await db
-    .select()
-    .from(likes)
-    .where(and(eq(likes.emojiId, emojiId), eq(likes.userId, userId)))
-    .limit(1);
-
-  return {
-    emoji,
-    isLiked: !!like,
-  };
-};
+);

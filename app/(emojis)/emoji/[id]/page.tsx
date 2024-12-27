@@ -1,7 +1,8 @@
 import { EmojiCard } from "@/components/emoji-card";
-import { EmojisGrid } from "@/components/emoji-grid";
-import { getEmoji, getEmojiWithLikeStatus } from "@/db/queries";
+import { EmojisGrid, EmojisGridSkeleton } from "@/components/emoji-grid";
+import { getEmojiWithLikeStatus } from "@/db/queries";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type EmojiPage = {
   params: Promise<{ id: string }>;
@@ -19,7 +20,10 @@ export default async function Page({ params }: EmojiPage) {
   return (
     <>
       <EmojiCard emoji={emoji} isLiked={isLiked} />
-      <EmojisGrid />
+
+      <Suspense fallback={<EmojisGridSkeleton />}>
+        <EmojisGrid emojiId={id} query={emoji.prompt} />
+      </Suspense>
     </>
   );
 }
