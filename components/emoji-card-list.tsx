@@ -16,7 +16,7 @@ export default function EmojiCardList({
   isLiked = false,
 }: EmojiCardListProps) {
   return (
-    <div className="relative group">
+    <li className="relative isolate hover:bg-muted/50 transition-colors ease-out duration-300 rounded-xl overflow-hidden select-none">
       <Link href={`/emoji/${emoji.id}`}>
         <img
           src={emoji.imageUrl}
@@ -35,33 +35,12 @@ export default function EmojiCardList({
           </span>
         </div>
       </div>
-      <div className="absolute top-2 right-2 flex gap-2">
+      <div className="absolute top-2 right-2 flex">
         <form>
           <Button
             size="icon"
             variant="ghost"
-            className="hover:bg-background/80 hover:text-primary"
-            formAction={async () => {
-              "use server";
-              const user = await currentUser();
-              if (!user) return;
-              await toggleLike(user.id, emoji.id);
-              revalidatePath("/");
-            }}
-          >
-            <Heart
-              className={`h-5 w-5 ${
-                isLiked ? "fill-primary text-primary" : ""
-              }`}
-            />
-            <span className="sr-only">{isLiked ? "Unlike" : "Like"}</span>
-          </Button>
-        </form>
-        <form>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="hover:bg-destructive/80 hover:text-destructive"
+            className="h-6 w-6"
             formAction={async () => {
               "use server";
               await deleteEmoji(emoji.id);
@@ -72,7 +51,27 @@ export default function EmojiCardList({
             <span className="sr-only">Delete</span>
           </Button>
         </form>
+        <form>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-6 w-6"
+            formAction={async () => {
+              "use server";
+              const newIsLiked = await toggleLike(emoji.userId, emoji.id);
+              revalidatePath("/");
+              // return newIsLiked;
+            }}
+          >
+            <Heart
+              className={`h-5 w-5 ${
+                isLiked ? "fill-primary text-primary" : ""
+              }`}
+            />
+            <span className="sr-only">{isLiked ? "Unlike" : "Like"}</span>
+          </Button>
+        </form>
       </div>
-    </div>
+    </li>
   );
 }

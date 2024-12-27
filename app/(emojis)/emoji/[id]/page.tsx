@@ -21,9 +21,12 @@ export default async function Page({ params }: EmojiPage) {
     <>
       <EmojiCard emoji={emoji} isLiked={isLiked} />
 
-      <Suspense fallback={<EmojisGridSkeleton />}>
-        <EmojisGrid emojiId={id} query={emoji.prompt} />
-      </Suspense>
+      <section className="mt-4">
+        <h2 className="text-2xl font-semibold mb-6">Related Emojis</h2>
+        <Suspense fallback={<EmojisGridSkeleton />}>
+          <EmojisGrid emojiId={id} query={emoji.prompt} />
+        </Suspense>
+      </section>
     </>
   );
 }

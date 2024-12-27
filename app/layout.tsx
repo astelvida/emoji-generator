@@ -10,6 +10,7 @@ import {
 } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import Header from "@/components/header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,7 +44,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <div className="mx-auto max-w-6xl container px-4 py-6">
+              <Header />
+              {children}
+              {/* <main className="mx-auto container px-4 py-6">{children}</main> */}
+            </div>
             <Toaster />
           </ThemeProvider>
         </body>

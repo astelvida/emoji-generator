@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, desc, sql, isNull, or, and } from "drizzle-orm";
+import { eq, desc, sql, isNull, or, and, ne } from "drizzle-orm";
 import { users, emojis, User, Emoji, likes } from "./schema";
 import { db } from ".";
 import { currentUser } from "@clerk/nextjs/server";
@@ -141,6 +141,43 @@ export const searchEmojis = cache(
       .select()
       .from(emojis)
       .where(sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`)
+      .orderBy(desc(emojis.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+);
+
+export const getRelatedEmojis = cache(
+  async (
+    emojiId: string,
+    query: string,
+    limit: number = 20,
+    offset: number = 0
+  ) => {
+    const searchQuery = query
+      .trim()
+      .split(/\s+/)
+      .map((term) => `${term}:*`)
+      .join(" | ");
+
+    console.log("searchQuery", searchQuery);
+
+    if (!searchQuery) return [];
+
+    const searchVector = sql`
+      to_tsvector('english', 
+        coalesce(${emojis.prompt}, '') || ' '
+      )
+    `;
+    return db
+      .select()
+      .from(emojis)
+      .where(
+        and(
+          sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`,
+          ne(emojis.id, emojiId)
+        )
+      )
       .orderBy(desc(emojis.createdAt))
       .limit(limit)
       .offset(offset);

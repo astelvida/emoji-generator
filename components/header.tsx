@@ -7,29 +7,26 @@ import { EmojiSearch } from "./emoji-search";
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background">
-      <div className="container px-4 py-4">
-        <div className="rounded-xl bg-background shadow-lg">
-          <div className="flex h-16 items-center gap-4 px-4">
-            {/* <SidebarTrigger /> */}
-            <nav className="ml-4 hidden md:flex gap-6">
-              <Link href="/" className="font-medium hover:text-primary">
-                Emoji Generator
-              </Link>
-            </nav>
-            <div className="ml-auto flex items-center gap-6">
-              <ModeToggle />
-              <Github />
-              <SignedOut>
-                <SignInButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </div>
+    <header className="sticky top-0 z-50 w-full bg-background mx-auto ">
+      <div className="rounded-xl bg-background shadow-lg">
+        <div className="flex h-16 items-center gap-4 px-4">
+          <nav className="ml-4 ">
+            <Link href="/" className="font-medium hover:text-primary">
+              Emoji Generator
+            </Link>
+          </nav>
+          <div className="ml-auto flex items-center gap-6">
+            <ModeToggle />
+            <Github />
+            <SignedOut>
+              <SignInButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
-          <EmojiSearch placeholder="Search and download AI emojis" />
         </div>
+        <EmojiSearch placeholder="Search and download AI emojis" />
       </div>
     </header>
   );

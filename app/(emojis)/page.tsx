@@ -1,9 +1,10 @@
 import { EmojiForm } from "@/components/emoji-form";
 import { EmojiCount } from "@/components/emoji-count";
-import { EmojisGrid } from "@/components/emoji-grid";
+import { EmojisGrid, EmojisGridSkeleton } from "@/components/emoji-grid";
 import { currentUser } from "@clerk/nextjs/server";
 import { createUser } from "@/db/queries";
 import { getUserById, getUserLikedEmojis } from "@/db/queries";
+import { Suspense } from "react";
 
 export default async function HomePage() {
   const currUser = await currentUser();
@@ -39,7 +40,12 @@ export default async function HomePage() {
         <EmojiForm />
       </section>
 
-      <EmojisGrid likedEmojis={likedEmojis} />
+      <section className="mt-4">
+        <h2 className="text-2xl font-semibold mb-6">Recent Emojis</h2>
+        <Suspense fallback={<EmojisGridSkeleton />}>
+          <EmojisGrid />
+        </Suspense>
+      </section>
     </>
   );
 }
