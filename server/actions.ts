@@ -13,18 +13,17 @@ export async function generateStart(prompt: string) {
       generateEmoji({ id, prompt }),
     ]);
 
-
     console.log("createdEmoji %O", createdEmoji);
     console.log("generatedEmoji %O", generatedEmoji);
 
     // return { createdEmoji, generatedEmoji };
   } catch (error) {
     console.error("Error generating emoji:", error);
-    throw new Error("Error generating emoji!!!" );
+    throw new Error("Error generating emoji!!!");
   }
 
-  return id
-  
+  return id;
+
   // return id;
-  // redirect(`/emoji/${id}`);  
+  // redirect(`/emoji/${id}`);
 }

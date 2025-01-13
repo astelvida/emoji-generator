@@ -4,17 +4,14 @@ import { extractPrompt } from "@/lib/utils";
 import slugify from "slugify";
 import { put } from "@vercel/blob";
 
-
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
-  // useFileOutput: false,
 });
 
 export async function POST(req: Request) {
   try {
-    const searchParams = new URL(req.url).searchParams; 
+    const searchParams = new URL(req.url).searchParams;
     const id = searchParams.get("id") as string;
-    
 
     // get output from Replicate
     const body = await req.json();
@@ -31,34 +28,25 @@ export async function POST(req: Request) {
       { input: { image: output[0] } }
     );
 
+    console.log("rmbgOutput %O", rmbgOutput);
+
     const cleanedPrompt = extractPrompt(prompt);
     const slug = slugify(cleanedPrompt) + "-" + id;
 
     // convert output to a blob object
 
-    async function uploadNoBackground() {
-      const noBackgroundFile = await fetch(rmbgOutput.toString()).then((res) =>
-        res.blob()
-      );
-      const { url } = await put(`${slug}.png`,
-        noBackgroundFile,
-        {
-          access: "public",
-        }
-      );
-      return url;
-    }
-
-    const noBackgroundUrl = await uploadNoBackground();
-
+    const noBgFile = await fetch(rmbgOutput.toString()).then((res) =>
+      res.blob()
+    );
+    const { url } = await put(`${slug}.png`, noBgFile, {
+      access: "public",
+    });
     // update emoji
-    const finalEmoji = await updateEmoji(id, {  
+    await updateEmoji(id, {
       slug,
-      imageUrl: noBackgroundUrl,
+      imageUrl: url,
       status: "generated",
     });
-
-    // console.log("finalEmoji %O", finalEmoji.prompt);
 
     return Response.json({ success: true });
   } catch (error) {
@@ -66,4 +54,3 @@ export async function POST(req: Request) {
     return Response.json({ success: false });
   }
 }
-

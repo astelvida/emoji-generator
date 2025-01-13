@@ -9,8 +9,6 @@ const replicate = new Replicate({
   // useFileOutput: false,
 });
 
-
-
 function normalizePrompt(input: string): string {
   return input
     .toLowerCase()
@@ -45,7 +43,6 @@ export async function generateEmoji({
       num_outputs: 1,
       disable_safety_checker: true,
       // negative_prompt: "soft, blurry, low quality, underexposed, realistic",
-
     },
     webhook: webhook.toString(),
     webhook_events_filter: ["completed"],
