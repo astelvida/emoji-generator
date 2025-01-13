@@ -3,15 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, ArrowUpRight, Loader2, Shuffle } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { generateStart } from "@/server/actions";
 import React from "react";
 import { emojiPrompts } from "./data";
+import { useRouter } from "next/navigation";
 
 export function EmojiForm() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [sampleEmojiPrompts, setSampleEmojiPrompts] = useState<string[]>([]);
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     const randomPrompts = emojiPrompts
@@ -38,16 +41,10 @@ export function EmojiForm() {
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
-      <form
-        className="relative"
-        action={async (formData) => {
-          const prompt = formData.get("prompt")?.toString().trim();
-          if (!prompt) return;
-          await generateStart(prompt);
-        }}
-      >
+      <div className="relative">
         <Textarea
           ref={textareaRef}
+          defaultValue={textareaRef.current?.value || ""}
           name="prompt"
           id="prompt"
           placeholder="Describe your emoji in detail..."
@@ -63,9 +60,27 @@ export function EmojiForm() {
             <Shuffle className="h-4 w-4" />
             <span className="sr-only">Randomize prompt</span>
           </Button>
-          <SubmitButton />
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-8 w-8 rounded-full"
+            disabled={pending}
+            onClick={async () => {
+              const id = await generateStart(textareaRef.current?.value || "");
+              startTransition(() => {
+                router.push(`/emoji/${id}`);
+              });
+            }}
+          >
+            {pending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
+            <span className="sr-only">Generate</span>
+          </Button>
         </div>
-      </form>
+      </div>
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
@@ -89,24 +104,3 @@ export function EmojiForm() {
     </div>
   );
 }
-
-const SubmitButton = () => {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button
-      size="icon"
-      variant="outline"
-      type="submit"
-      className="h-8 w-8 rounded-full"
-      disabled={pending}
-    >
-      {pending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <ArrowRight className="h-4 w-4" />
-      )}
-      <span className="sr-only">Generate</span>
-    </Button>
-  );
-};

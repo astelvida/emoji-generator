@@ -9,8 +9,6 @@ type EmojiPage = {
 };
 
 
-
-
 export default async function Page({ params }: EmojiPage) {
   const { id } = await params;
 

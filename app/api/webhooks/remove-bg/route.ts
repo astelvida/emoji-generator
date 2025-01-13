@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   try {
     const searchParams = new URL(req.url).searchParams; 
     const id = searchParams.get("id") as string;
+    
 
     // get output from Replicate
     const body = await req.json();
