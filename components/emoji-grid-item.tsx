@@ -3,20 +3,25 @@ import { Trash, Heart } from "lucide-react";
 import Link from "next/link";
 import { deleteEmoji, toggleLike } from "@/db/queries";
 import { Emoji } from "@/db/schema";
-import { revalidatePath } from "next/cache";
 import Image from "next/image";
+import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 interface EmojiGridItemProps {
-  emoji: Emoji;
+  emoji: Emoji & { isFavorite: boolean };
 }
 
-export function EmojiGridItem({ emoji }: EmojiGridItemProps) {
+// export const dynamic = "force-dynamic";
+
+export async function EmojiGridItem({
+  emoji: { id, imageUrl, prompt, favoriteCount, isFavorite },
+}: EmojiGridItemProps) {
   return (
     <li className="relative isolate hover:bg-muted/50 transition-colors ease-out duration-300 rounded-xl overflow-hidden select-none">
-      {emoji.imageUrl && (
-        <Link href={`/emoji/${emoji.id}`}>
+      {imageUrl && (
+        <Link href={`/emoji/${id}`}>
           <Image
-            src={emoji.imageUrl || ""}
-            alt={emoji.prompt || ""}
+            src={imageUrl || ""}
+            alt={prompt || ""}
             width={200}
             height={200}
             className="w-full h-full object-contain rounded-xl"
@@ -25,9 +30,9 @@ export function EmojiGridItem({ emoji }: EmojiGridItemProps) {
         </Link>
       )}
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">{emoji.prompt}</p>
+        <p className="text-xs text-muted-foreground">{prompt}</p>
         <div className="flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">{emoji.favoriteCount || 0}</span>
+          <span className="text-xs text-muted-foreground">{favoriteCount || 0}</span>
         </div>
       </div>
       <div className="absolute top-2 right-2 flex">
@@ -38,9 +43,9 @@ export function EmojiGridItem({ emoji }: EmojiGridItemProps) {
             className="h-6 w-6"
             formAction={async () => {
               "use server";
-              await deleteEmoji(emoji.id);
+              await deleteEmoji(id);
             }}
-            disabled={!emoji.imageUrl}
+            disabled={!imageUrl}
           >
             <Trash className="h-5 w-5" />
             <span className="sr-only">Delete</span>
@@ -53,17 +58,16 @@ export function EmojiGridItem({ emoji }: EmojiGridItemProps) {
             className="h-6 w-6"
             formAction={async () => {
               "use server";
+              const newIsLiked = await toggleLike(id);
 
-              const newIsLiked = await toggleLike(emoji.userId, emoji.id);
-              console.log("newIsLiked %O", newIsLiked);
-
-              revalidatePath("/");
-              revalidatePath(`/emoji/${emoji.id}`);
-              // return newIsLiked;
+              // revalidatePath("/");
+              // revalidatePath(`/emoji/${id}`);
+              const jar = await cookies();
+              jar.set("isFavorite", JSON.stringify(id + newIsLiked.toString()));
             }}
           >
-            <Heart className={`h-5 w-5 ${emoji.isFavorite ? "fill-primary text-primary" : ""}`} />
-            <span className="sr-only">{emoji.isFavorite ? "Unlike" : "Like"}</span>
+            <Heart className={`h-5 w-5 ${isFavorite ? "fill-primary text-primary" : ""}`} />
+            <span className="sr-only">{isFavorite ? "Unlike" : "Like"}</span>
           </Button>
         </form>
       </div>

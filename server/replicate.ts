@@ -2,6 +2,7 @@
 
 import { EMOJI_SIZE } from "@/lib/constants";
 import { WEBHOOK_URL } from "@/lib/constants";
+import { auth } from "@clerk/nextjs/server";
 import Replicate from "replicate";
 
 const replicate = new Replicate({
@@ -28,8 +29,12 @@ export async function generateEmoji({
   prompt: string;
   slug: string;
 }) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User not authenticated");
+
   const webhook = new URL(`${WEBHOOK_URL}/api/webhooks/remove-bg`);
   webhook.searchParams.set("id", id);
+  webhook.searchParams.set("userId", userId as string);
   webhook.searchParams.set("slug", slug);
 
   const inputPrompt = `A TOK emoji of ${normalizePrompt(prompt)}, white background`;

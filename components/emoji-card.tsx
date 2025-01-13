@@ -5,18 +5,18 @@ import { EmojiCardActionButtons } from "@/components/emoji-card-action-buttons";
 import { Emoji } from "@/db/schema";
 
 type EmojiCardProps = {
-  emoji: Emoji & { isLiked: boolean };
+  emoji: Emoji & { isFavorite: boolean };
 };
 
 export async function EmojiCard({ emoji }: EmojiCardProps) {
   // const emoji = await getEmoji(id);
 
-  const { id, slug, imageUrl, prompt, createdAt, isLiked } = emoji;
+  const { id, slug, imageUrl, prompt, createdAt, isFavorite } = emoji;
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col flex-nowrap justify-center space-y-2">
       <div className="flex items-center justify-between">
         <EmojiCardUser />
-        <EmojiCardDropdown id={id} imageUrl={imageUrl} slug={slug} isLiked={isLiked} />
+        <EmojiCardDropdown id={id} imageUrl={imageUrl} slug={slug} isFavorite={isFavorite} />
       </div>
       <div className="flex flex-row flex-nowrap items-start justify-between">
         <h1 className="text-2xl font-bold">{prompt}</h1>

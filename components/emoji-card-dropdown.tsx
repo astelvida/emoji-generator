@@ -21,13 +21,13 @@ export function EmojiCardDropdown({
   imageUrl,
   id,
   slug,
-  isLiked,
-}: Pick<Emoji, "imageUrl" | "id" | "slug"> & { isLiked: boolean }) {
+  isFavorite,
+}: Pick<Emoji, "imageUrl" | "id" | "slug"> & { isFavorite: boolean }) {
   const { toast } = useToast();
-  const [isLikedState, setIsLikedState] = useState(isLiked);
+  const [isFavoriteState, setIsFavoriteState] = useState(isFavorite);
 
   const handleLike = async () => {
-    setIsLikedState(!isLikedState);
+    setIsFavoriteState(!isFavoriteState);
     await toggleLike(id);
   };
 
@@ -36,11 +36,11 @@ export function EmojiCardDropdown({
       <Button
         size="icon"
         variant="ghost"
-        className={`rounded-full ${isLikedState ? "text-red-500" : ""}`}
+        className={`rounded-full ${isFavoriteState ? "text-red-500" : ""}`}
         onClick={handleLike}
         disabled={!imageUrl}
       >
-        <Heart className="h-5 w-5" fill={isLikedState ? "currentColor" : "none"} />
+        <Heart className="h-5 w-5" fill={isFavoriteState ? "currentColor" : "none"} />
         <span className="sr-only">Like</span>
       </Button>
 

@@ -1,5 +1,5 @@
-import { relations } from "drizzle-orm";
-import { text, timestamp, varchar, integer, pgTable, serial } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import { text, timestamp, varchar, integer, pgTable, serial, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -16,7 +16,7 @@ export const emojis = pgTable(
   "emojis",
   {
     id: varchar("id").primaryKey().notNull(),
-    prompt: text("prompt"),
+    prompt: text("prompt").notNull(),
     slug: text("slug"),
     imageUrl: text("image_url"),
     status: text("status").default("generating"),
@@ -26,7 +26,17 @@ export const emojis = pgTable(
       .notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  }
+  },
+  (table) => ({
+    promptSearchIndex: index("prompt_search_index").using(  
+      "gin",
+      sql`to_tsvector('english', ${table.prompt})`,
+    ),
+    // promptTrgmIndex: index("prompt_trgm_index")
+    //   .using("gin", sql`${table.prompt} gin_trgm_ops`)
+    //   .concurrently(),
+    slugIdx: index("slug_idx").on(table.slug),
+  }),
 );
 
 export const likes = pgTable("likes", {
