@@ -6,19 +6,15 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { generateStart } from "@/server/actions";
 import type { Emoji } from "@/db/schema";
+import { usePathname } from "next/navigation";
 
-type EmojiActionButtonsProps = Partial<Emoji>;
+type EmojiCardActionButtonsProps = Partial<Emoji>;
 
-export function EmojiActionButtons({
-  imageUrl,
-  prompt,
-  id,
-}: EmojiActionButtonsProps) {
-  const [isRemixing, setIsRemixing] = useState(false);
+export function EmojiCardActionButtons({ imageUrl, prompt }: EmojiCardActionButtonsProps) {
   const { toast } = useToast();
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/emoji/${id}`;
+    const shareUrl = window.location.href;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -64,26 +60,24 @@ export function EmojiActionButtons({
         <Button
           variant="secondary"
           className="w-full py-6 text-base font-medium"
-          disabled={isRemixing || !imageUrl}
+          disabled={!imageUrl}
           formAction={async () => {
-            setIsRemixing(true);
-            await generateStart(prompt);
-            setIsRemixing(false);
+            await generateStart(prompt || "");
           }}
         >
-          {isRemixing ? (
+          {!imageUrl ? (
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
             <Shuffle className="mr-2 h-5 w-5" />
           )}
-          {isRemixing ? "Remixing..." : "Remix"}
+          {!imageUrl ? "Generating..." : "Remix"}
         </Button>
       </form>
       <Button
         variant="secondary"
         className="w-full py-6 text-base font-medium"
         onClick={handleShare}
-        disabled={isRemixing || !imageUrl}
+        disabled={!imageUrl}
       >
         <Share2 className="mr-2 h-5 w-5" />
         Share

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Heart,
-  MoreHorizontal,
-  Download,
-  Copy,
-  Flag,
-  Trash,
-} from "lucide-react";
+import { Heart, MoreHorizontal, Download, Copy, Flag, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,28 +15,20 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteEmoji, toggleLike } from "@/db/queries";
 import { useState } from "react";
+import { Emoji } from "@/db/schema";
 
-export function EmojiDisplayButtons({
+export function EmojiCardDropdown({
   imageUrl,
   id,
   slug,
-  userId,
-  isLikedByUser,
-}: {
-  imageUrl: string | null;
-  id: string;
-  slug: string;
-  userId: string;
-  isLikedByUser: boolean;
-}) {
+  isLiked,
+}: Pick<Emoji, "imageUrl" | "id" | "slug"> & { isLiked: boolean }) {
   const { toast } = useToast();
-
-  const [isLiked, setIsLiked] = useState(isLikedByUser);
+  const [isLikedState, setIsLikedState] = useState(isLiked);
 
   const handleLike = async () => {
-    setIsLiked(!isLiked);
-    const newIsLiked = await toggleLike(userId, id);
-    // setIsLiked(newIsLiked);
+    setIsLikedState(!isLikedState);
+    await toggleLike(id);
   };
 
   return (
@@ -51,20 +36,15 @@ export function EmojiDisplayButtons({
       <Button
         size="icon"
         variant="ghost"
-        className={`rounded-full ${isLiked ? "text-red-500" : ""}`}
+        className={`rounded-full ${isLikedState ? "text-red-500" : ""}`}
         onClick={handleLike}
         disabled={!imageUrl}
       >
-        <Heart className="h-5 w-5" fill={isLiked ? "currentColor" : "none"} />
+        <Heart className="h-5 w-5" fill={isLikedState ? "currentColor" : "none"} />
         <span className="sr-only">Like</span>
       </Button>
 
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={() => deleteEmoji(id)}
-        disabled={!imageUrl}
-      >
+      <Button size="icon" variant="ghost" onClick={() => deleteEmoji(id)} disabled={!imageUrl}>
         <Trash className="h-5 w-5" />
         <span className="sr-only">Delete</span>
       </Button>
@@ -79,17 +59,9 @@ export function EmojiDisplayButtons({
           <DropdownMenuItem
             disabled={!imageUrl}
             onClick={() =>
-              downloadImageWithFilename(imageUrl || "", `${slug}.png`)
-                .then(() => {
-                  toast({
-                    description: "Downloaded emoji!",
-                  });
-                })
-                .catch((e) =>
-                  toast({
-                    description: "Download emoji failed :(",
-                  })
-                )
+              downloadImageWithFilename(imageUrl, `${slug}.png`)
+                .then(() => toast({ description: "Emoji downloaded!" }))
+                .catch(() => toast({ description: "Emoji download failed :(" }))
             }
           >
             <Download className="mr-2 h-4 w-4" />
@@ -98,15 +70,9 @@ export function EmojiDisplayButtons({
           <DropdownMenuItem
             disabled={!imageUrl}
             onClick={() =>
-              copyToClipboard(imageUrl || "")
-                .then(() =>
-                  toast({ description: "Copied emoji to clipboard!" })
-                )
-                .catch(() =>
-                  toast({
-                    description: "Couldn't copy emoji to clipboard :(",
-                  })
-                )
+              copyToClipboard(imageUrl)
+                .then(() => toast({ description: "Emoji copied to clipboard!" }))
+                .catch(() => toast({ description: "Emoji copy failed :(" }))
             }
           >
             <Copy className="mr-2 h-4 w-4" />

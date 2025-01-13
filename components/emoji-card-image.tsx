@@ -1,23 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { Loader, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Loader } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { Emoji } from "@/db/schema";
 import confetti from "canvas-confetti";
 import clsx from "clsx";
+import useSWR from "swr";
+import { useRouter } from "next/navigation";
 
-type EmojiDisplayImageProps = Partial<Emoji>;
+type EmojiCardImageProps = Partial<Emoji>;
 
-export function EmojiDisplayImage({
-  imageUrl,
-  prompt,
-}: EmojiDisplayImageProps) {
+export function EmojiCardImage({ id, imageUrl, prompt, createdAt }: EmojiCardImageProps) {
   const [isFirstLoad, setIsFirstLoad] = useState(false);
+
   const router = useRouter();
 
+  // console.log(data);
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (!imageUrl) {
@@ -29,17 +28,21 @@ export function EmojiDisplayImage({
     return () => clearInterval(interval);
   }, [imageUrl, router]);
 
+  // const [isLoadingImage, setIsLoadingImage] = useState(false);
+  // const src = data?.imageUrl || imageUrl;
+  // const showImageTag = !!src; // don't render image tag if no src
+  // const showImagePlaceholder = isLoadingEmoji || isLoadingImage || !showImageTag;
+
   return (
     <>
       <div className="relative aspect-square w-full flex-1 self-center rounded-lg">
         {imageUrl && (
-          <img  
+          <img
             src={imageUrl}
             alt={prompt || ""}
             width={512}
             height={512}
-            className="aspect-square object-contain"  
-            priority={true}
+            className="aspect-square object-contain"
             onLoad={() => {
               if (isFirstLoad) {
                 setIsFirstLoad(false);
@@ -60,9 +63,7 @@ export function EmojiDisplayImage({
           )}
         >
           <div className="flex items-center space-x-2">
-            <span className="text-balance text-center text-xl font-medium">
-              Generating...
-            </span>
+            <span className="text-balance text-center text-xl font-medium">Generating...</span>
             <Loader className="w-8 h-8 animate-spin" />
           </div>
         </div>

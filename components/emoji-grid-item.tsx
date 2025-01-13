@@ -5,29 +5,29 @@ import { deleteEmoji, toggleLike } from "@/db/queries";
 import { Emoji } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import Image from "next/image";
-interface EmojiCardListProps {
+interface EmojiGridItemProps {
   emoji: Emoji;
 }
 
-export default function EmojiCardList({ emoji }: EmojiCardListProps) {
+export function EmojiGridItem({ emoji }: EmojiGridItemProps) {
   return (
     <li className="relative isolate hover:bg-muted/50 transition-colors ease-out duration-300 rounded-xl overflow-hidden select-none">
-      {emoji.imageUrl && <Link href={`/emoji/${emoji.id}`}>
-        <Image    
-          src={emoji.imageUrl || ""}
-          alt={emoji.prompt || ""}
-          width={200}
-          height={200}
-          className="w-full h-full object-contain rounded-xl" 
-          loading="lazy"
-        />
-      </Link>}
+      {emoji.imageUrl && (
+        <Link href={`/emoji/${emoji.id}`}>
+          <Image
+            src={emoji.imageUrl || ""}
+            alt={emoji.prompt || ""}
+            width={200}
+            height={200}
+            className="w-full h-full object-contain rounded-xl"
+            loading="lazy"
+          />
+        </Link>
+      )}
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
         <p className="text-xs text-muted-foreground">{emoji.prompt}</p>
         <div className="flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">
-            {emoji.favoriteCount || 0}
-          </span>
+          <span className="text-xs text-muted-foreground">{emoji.favoriteCount || 0}</span>
         </div>
       </div>
       <div className="absolute top-2 right-2 flex">
@@ -62,14 +62,8 @@ export default function EmojiCardList({ emoji }: EmojiCardListProps) {
               // return newIsLiked;
             }}
           >
-            <Heart
-              className={`h-5 w-5 ${
-                emoji.isFavorite ? "fill-primary text-primary" : ""
-              }`}
-            />
-            <span className="sr-only">
-              {emoji.isFavorite ? "Unlike" : "Like"}
-            </span>
+            <Heart className={`h-5 w-5 ${emoji.isFavorite ? "fill-primary text-primary" : ""}`} />
+            <span className="sr-only">{emoji.isFavorite ? "Unlike" : "Like"}</span>
           </Button>
         </form>
       </div>

@@ -22,18 +22,19 @@ function normalizePrompt(input: string): string {
 export async function generateEmoji({
   id,
   prompt,
+  slug,
 }: {
   id: string;
   prompt: string;
+  slug: string;
 }) {
   const webhook = new URL(`${WEBHOOK_URL}/api/webhooks/remove-bg`);
   webhook.searchParams.set("id", id);
+  webhook.searchParams.set("slug", slug);
 
-  const cleanedInput = normalizePrompt(prompt);
+  const inputPrompt = `A TOK emoji of ${normalizePrompt(prompt)}, white background`;
+  console.log("inputPrompt: ", inputPrompt);
 
-  const inputPrompt = `A TOK emoji of ${cleanedInput}, white background`;
-
-  console.log("inputPrompt\n", inputPrompt);
   return replicate.predictions.create({
     version: "dee76b5afde21b0f01ed7925f0665b7e879c50ee718c5f78a9d38e04d523cc5e",
     input: {
@@ -42,7 +43,7 @@ export async function generateEmoji({
       prompt: inputPrompt,
       num_outputs: 1,
       disable_safety_checker: true,
-      // negative_prompt: "soft, blurry, low quality, underexposed, realistic",
+      negative_prompt: "soft, blurry, low quality, underexposed, realistic",
     },
     webhook: webhook.toString(),
     webhook_events_filter: ["completed"],

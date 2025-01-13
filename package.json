@@ -44,6 +44,7 @@
     "slugify": "^1.6.6",
     "sonner": "^1.7.1",
     "svix": "^1.44.0",
+    "swr": "^2.3.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "use-debounce": "^10.0.4",

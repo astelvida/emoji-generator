@@ -1,5 +1,5 @@
 export const SITEMAP_PAGE_SIZE = 50_000;
-export const EMOJI_SIZE = 512;
+export const EMOJI_SIZE = 768;
 
 export const WEBHOOK_URL =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||

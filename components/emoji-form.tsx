@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, ArrowUpRight, Loader2, Shuffle } from "lucide-react";
 import { useRef, useEffect, useState, useTransition } from "react";
-import { useFormStatus } from "react-dom";
 import { generateStart } from "@/server/actions";
 import React from "react";
 import { emojiPrompts } from "./data";
@@ -65,9 +64,9 @@ export function EmojiForm() {
             variant="outline"
             className="h-8 w-8 rounded-full"
             disabled={pending}
-            onClick={async () => {
-              const id = await generateStart(textareaRef.current?.value || "");
-              startTransition(() => {
+            onClick={() => {
+              startTransition(async () => {
+                const id = await generateStart(textareaRef.current?.value || "");
                 router.push(`/emoji/${id}`);
               });
             }}

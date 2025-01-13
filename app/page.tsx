@@ -1,6 +1,6 @@
 import { EmojiForm } from "@/components/emoji-form";
 import { EmojiCount } from "@/components/emoji-count";
-import { EmojisGrid, EmojisGridSkeleton } from "@/components/emoji-grid";
+import { EmojiGrid, EmojiGridSkeleton } from "@/components/emoji-grid";
 import { Suspense } from "react";
 
 export default async function HomePage() {
@@ -16,8 +16,8 @@ export default async function HomePage() {
 
       <section className="mt-4">
         <h2 className="text-2xl font-semibold mb-6">Recent Emojis</h2>
-        <Suspense fallback={<EmojisGridSkeleton />}>
-          <EmojisGrid />
+        <Suspense fallback={<EmojiGridSkeleton />}>
+          <EmojiGrid />
         </Suspense>
       </section>
     </>

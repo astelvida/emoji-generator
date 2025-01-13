@@ -1,12 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  text,
-  timestamp,
-  varchar,
-  integer,
-  pgTable,
-  serial,
-} from "drizzle-orm/pg-core";
+import { text, timestamp, varchar, integer, pgTable, serial } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -36,20 +29,16 @@ export const emojis = pgTable(
   }
 );
 
-
-export const likes = pgTable(
-  "likes",
-  {
-    id: serial("id").primaryKey(),
-    userId: varchar("user_id")
-      .references(() => users.id, { onDelete: "cascade" })
-      .notNull(),
-    emojiId: varchar("emoji_id")
-      .references(() => emojis.id, { onDelete: "cascade" })
-      .notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  }
-);
+export const likes = pgTable("likes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  emojiId: varchar("emoji_id")
+    .references(() => emojis.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({

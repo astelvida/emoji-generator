@@ -1,10 +1,9 @@
 "use server";
 
-import { eq, desc, sql, isNull, or, and, ne, isNotNull } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
+import { db } from "./index";
 import { users, emojis, User, Emoji, likes } from "./schema";
-import { db } from ".";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { cache } from "react";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -17,11 +16,7 @@ export const getUser = async () => {
     if (!currUser) throw new Error("GET USER FAILED: User not authenticated");
     const id = currUser.id;
 
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1);
+    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return user;
   } catch (error) {
     console.error("GET USER FAILED: ", error);
@@ -41,7 +36,7 @@ export const getEmoji = async (id: string): Promise<Emoji | undefined> => {
     return emoji;
   } catch (error) {
     console.error("GET EMOJI FAILED: ", error);
-    return null;
+    throw new Error("GET EMOJI FAILED: " + error);
   }
 };
 
@@ -58,39 +53,33 @@ export const createEmoji = async (emoji: Partial<Emoji>): Promise<Emoji> => {
     return newEmoji;
   } catch (error) {
     console.error("CREATE EMOJI FAILED: ", error);
-    return null;
+    throw new Error("CREATE EMOJI FAILED: " + error);
   }
 };
 
-export const updateEmoji = async (
-  id: string,
-  data: Partial<Emoji>
-): Promise<Emoji> => {
+export const updateEmoji = async (id: string, data: Partial<Emoji>): Promise<Emoji> => {
   try {
-    // const { userId } = await auth();
-    // if (!userId) throw new Error("User not authenticated");
+    const { userId } = await auth();
+    if (!userId) throw new Error("User not authenticated");
 
-    const [emoji] = await db
-      .update(emojis)
-      .set(data)
-      .where(eq(emojis.id, id))
-      .returning();
+    const [emoji] = await db.update(emojis).set(data).where(eq(emojis.id, id)).returning();
 
     return emoji;
   } catch (error) {
     console.error("UPDATE EMOJI FAILED: ", error);
-    return null;
+    throw new Error("UPDATE EMOJI FAILED: " + error);
   }
 };
 
 export const getEmojiCount = async (): Promise<number> => {
-  const [count] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(emojis);
+  const [count] = await db.select({ count: sql<number>`count(*)` }).from(emojis);
   return count.count;
 };
 
 export const deleteEmoji = async (id: string): Promise<void> => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("DELETE EMOJI FAILED: User not authenticated");
+
   const myHeaders = await headers();
   const currentPath = new URL(myHeaders.get("referer") || "/");
   const pathname = currentPath.pathname;
@@ -105,11 +94,7 @@ export const deleteEmoji = async (id: string): Promise<void> => {
 
 export const getEmojis = async (): Promise<Emoji[]> => {
   try {
-    const emojisData = await db
-      .select()
-      .from(emojis)
-      .orderBy(desc(emojis.createdAt))
-      .limit(50);
+    const emojisData = await db.select().from(emojis).orderBy(desc(emojis.createdAt)).limit(50);
     return emojisData;
   } catch (error) {
     console.error("GET EMOJIS FAILED: ", error);
@@ -118,7 +103,9 @@ export const getEmojis = async (): Promise<Emoji[]> => {
 };
 
 // Like/Unlike emoji
-export const toggleLike = async (userId: string, emojiId: string) => {
+export const toggleLike = async (emojiId: string) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User not authenticated");
   const existingLike = await db
     .select()
     .from(likes)
@@ -127,9 +114,7 @@ export const toggleLike = async (userId: string, emojiId: string) => {
 
   if (existingLike.length > 0) {
     // Unlike
-    await db
-      .delete(likes)
-      .where(and(eq(likes.userId, userId), eq(likes.emojiId, emojiId)));
+    await db.delete(likes).where(and(eq(likes.userId, userId), eq(likes.emojiId, emojiId)));
     await db
       .update(emojis)
       .set({ favoriteCount: sql`${emojis.favoriteCount} - 1` })
@@ -146,26 +131,12 @@ export const toggleLike = async (userId: string, emojiId: string) => {
   }
 };
 
-export const getEmojiWithLikeStatus = async (
-  emojiId: string
-): Promise<{ emoji: Emoji | undefined; isLiked: boolean }> => {
+export const getEmojiWithLikeStatus = async (emojiId: string): Promise<{ emoji: Emoji }> => {
   try {
-    const user = await currentUser();
-    const userId = user?.id;
-    if (!userId)
-      throw new Error(
-        "GET EMOJI WITH LIKE STATUS FAILED: User not authenticated"
-      );
+    const { userId } = await auth();
+    if (!userId) throw new Error("User not authenticated");
 
-    const [emoji] = await db
-      .select()
-      .from(emojis)
-      .where(eq(emojis.id, emojiId));
-
-    if (!emoji || !userId) {
-      return { emoji, isLiked: false };
-    }
-
+    const [emoji] = await db.select().from(emojis).where(eq(emojis.id, emojiId)).limit(1);
     const [like] = await db
       .select()
       .from(likes)
@@ -173,11 +144,10 @@ export const getEmojiWithLikeStatus = async (
       .limit(1);
 
     return {
-      emoji,
-      isLiked: !!like,
+      emoji: { ...emoji, isLiked: !!like },
     };
   } catch (error) {
     console.error("GET EMOJI WITH LIKE STATUS FAILED: ", error);
-    return { emoji: null, isLiked: false };
+    return { emoji: null, error: error };
   }
 };

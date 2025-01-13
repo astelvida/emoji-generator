@@ -3,27 +3,18 @@
 import { createEmoji } from "@/db/queries";
 import { nanoid } from "@/lib/utils";
 import { generateEmoji } from "./replicate";
+import slugify from "slugify";
 
 export async function generateStart(prompt: string) {
   const id = nanoid();
+  const slug = slugify(prompt + "-" + id);
 
   try {
-    const [createdEmoji, generatedEmoji] = await Promise.all([
-      createEmoji({ id, prompt }),
-      generateEmoji({ id, prompt }),
-    ]);
-
-    console.log("createdEmoji %O", createdEmoji);
-    console.log("generatedEmoji %O", generatedEmoji);
-
-    // return { createdEmoji, generatedEmoji };
+    await Promise.all([createEmoji({ id, prompt, slug }), generateEmoji({ id, prompt, slug })]);
   } catch (error) {
     console.error("Error generating emoji:", error);
     throw new Error("Error generating emoji!!!");
   }
 
   return id;
-
-  // return id;
-  // redirect(`/emoji/${id}`);
 }
