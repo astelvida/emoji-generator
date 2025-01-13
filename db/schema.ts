@@ -4,9 +4,7 @@ import {
   timestamp,
   varchar,
   integer,
-  json,
   pgTable,
-  index,
   serial,
 } from "drizzle-orm/pg-core";
 
@@ -24,8 +22,8 @@ export const users = pgTable("users", {
 export const emojis = pgTable(
   "emojis",
   {
-    id: varchar("id").primaryKey(),
-    prompt: text("prompt").notNull(),
+    id: varchar("id").primaryKey().notNull(),
+    prompt: text("prompt"),
     slug: text("slug"),
     imageUrl: text("image_url"),
     status: text("status").default("generating"),
@@ -38,16 +36,11 @@ export const emojis = pgTable(
   }
 );
 
-// .where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
 
-// prettier-ignore
-// Likes table
 export const likes = pgTable(
   "likes",
   {
     id: serial("id").primaryKey(),
-    
-
     userId: varchar("user_id")
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
@@ -55,13 +48,7 @@ export const likes = pgTable(
       .references(() => emojis.id, { onDelete: "cascade" })
       .notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => ({
-    userIdEmojiIdIdx: index("likes_userId_emojiId_idx").on(
-      table.userId,
-      table.emojiId
-    ),
-  })
+  }
 );
 
 // Relations

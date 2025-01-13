@@ -34,8 +34,8 @@ export function EmojiDisplayImage({
       <div className="relative aspect-square w-full flex-1 self-center rounded-lg">
         {imageUrl && (
           <Image  
-            src={imageUrl}
-            alt={prompt}
+            src={imageUrl || null}
+            alt={prompt || ""}
             width={512}
             height={512}
             className="aspect-square object-contain"  

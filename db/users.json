@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "email": "brushstrokesai@gmail.com",
+    "name": "BrushstrokesAI",
+    "username": null,
+    "image_url": null,
+    "created_at": "2024-12-27 15:40:54.387612"
+  },
+  {
+    "id": "user_2oblqBrPw7AZa3XFkbx1hoscbX2",
+    "email": "sevda.m.anefi@gmail.com",
+    "name": "Sevda Anefi",
+    "username": "astelvida",
+    "image_url": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ2l0aHViL2ltZ18yb2JscUJRQ2pFMnA5c3RsZm40bXR5MWhDbDEifQ",
+    "created_at": "2024-12-27 05:54:33.337753"
+  },
+  {
+    "id": "user_2ovJMUCpjZ0qLBLDrJSThYvCVx7",
+    "email": "anefisevda@gmail.com",
+    "name": "Sevda Anefi",
+    "username": null,
+    "image_url": null,
+    "created_at": "2024-12-27 15:40:54.387612"
+  },
+  {
+    "id": "user_2p9lJ7gIExFgqjUL7i31hf7cpuK",
+    "email": "sevdulinabalerina@gmail.com",
+    "name": "SEVDA ANEFI",
+    "username": null,
+    "image_url": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18ycDlsSkVnRHVXdHlISFpPZjk5VHFhVmwzSTQifQ",
+    "created_at": "2024-12-27 14:31:19.910291"
+  },
+  {
+    "id": "user_2p9lSWVgYydef5217E7FCfL3kqV",
+    "email": "hello@khaleea.com",
+    "name": "Khaleea Jewelry",
+    "username": null,
+    "image_url": null,
+    "created_at": "2024-12-27 15:40:54.387612"
+  },
+  {
+    "id": "user_2qntYrtMuxlw1l5DTf9WUJhzkHo",
+    "email": "sss@gmail.com",
+    "name": "alina mariana",
+    "username": null,
+    "image_url": "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yb2JsWW90Z2JrR2xwNnpNbXpFU0h5b1JsbmYiLCJyaWQiOiJ1c2VyXzJxbnRZcnRNdXhsdzFsNURUZjlXVUpoemtIbyIsImluaXRpYWxzIjoiQU0ifQ",
+    "created_at": "2024-12-27 14:36:58.346319"
+  }
+]

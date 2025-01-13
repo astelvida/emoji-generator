@@ -1,5 +1,5 @@
 {
-  "id": "c393eed3-7cda-404c-a6d4-68a4c033dfaa",
+  "id": "2432b052-9c28-4c79-aabf-0cf92f52bf4f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -18,16 +18,10 @@
           "name": "prompt",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "slug": {
           "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "original_url": {
-          "name": "original_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -37,32 +31,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "caption": {
-          "name": "caption",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "categories": {
-          "name": "categories",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'[]'::json"
-        },
-        "keywords": {
-          "name": "keywords",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'[]'::json"
         },
         "status": {
           "name": "status",
@@ -151,29 +119,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "likes_userId_emojiId_idx": {
-          "name": "likes_userId_emojiId_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "emoji_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "likes_user_id_users_id_fk": {
           "name": "likes_user_id_users_id_fk",

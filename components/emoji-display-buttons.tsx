@@ -19,7 +19,7 @@ import {
 import { downloadImageWithFilename } from "@/lib/browser-utils";
 import { copyToClipboard } from "@/lib/browser-utils";
 import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { deleteEmoji, toggleLike } from "@/db/queries";
 import { useState } from "react";
 

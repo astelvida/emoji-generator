@@ -1,9 +1,8 @@
 import { EmojiDisplayUser } from "@/components/emoji-display-user";
-import { EmojiDisplayImage, EmojiDisplayImageSkeleton } from "@/components/emoji-display-image";
-import { EmojiDisplayButtons } from "./emoji-display-buttons";
-import { EmojiActionButtons } from "./emoji-action-buttons";
+import { EmojiDisplayImage } from "@/components/emoji-display-image";
+import { EmojiDisplayButtons } from "@/components/emoji-display-buttons";
+import { EmojiActionButtons } from "@/components/emoji-action-buttons";
 import { Emoji } from "@/db/schema";
-import { Suspense } from "react";
 
 type EmojiCard = {
   id: string;

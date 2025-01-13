@@ -31,17 +31,6 @@ export function roundBy(x: number, decimals: number = 1) {
   );
 }
 
-export function getPercentageFromLine(line: string) {
-  const match = line.trim().match(/^(\d+)%/);
-  return match ? match[1] : null;
-}
-
-export function extractLatestPercentage(logs: string) {
-  // Split the logs into individual lines
-  const lastLine = logs.trim().split("\n").pop()?.trim();
-  const lastPercentage = getPercentageFromLine(lastLine || "");
-  return lastPercentage;
-}
 
 export function extractPrompt(input: string): string {
   const regex = /^(?:a )?TOK emoji of (.*?),/i;

@@ -4,8 +4,6 @@ import { extractPrompt } from "@/lib/utils";
 import slugify from "slugify";
 import { put } from "@vercel/blob";
 
-// import { UTApi } from "uploadthing/server";
-// const utapi = new UTApi();
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -14,7 +12,7 @@ const replicate = new Replicate({
 
 export async function POST(req: Request) {
   try {
-    const searchParams = new URL(req.url).searchParams;
+    const searchParams = new URL(req.url).searchParams; 
     const id = searchParams.get("id") as string;
 
     // get output from Replicate
@@ -41,20 +39,19 @@ export async function POST(req: Request) {
       const noBackgroundFile = await fetch(rmbgOutput.toString()).then((res) =>
         res.blob()
       );
-      const { url: noBackgroundUrl } = await put(
-        `${slug}-no-background.png`,
+      const { url } = await put(`${slug}.png`,
         noBackgroundFile,
         {
           access: "public",
         }
       );
-      return noBackgroundUrl;
+      return url;
     }
 
     const noBackgroundUrl = await uploadNoBackground();
 
     // update emoji
-    const finalEmoji = await updateEmoji(id, {
+    const finalEmoji = await updateEmoji(id, {  
       slug,
       imageUrl: noBackgroundUrl,
       status: "generated",
@@ -69,17 +66,3 @@ export async function POST(req: Request) {
   }
 }
 
-// const files = [
-//   { url: output[0], name: `${slug}-${id}-original.${imageType}` },
-//   { url: rmbgOutput.url(), name: `${slug}-${id}-no-background.${imageType}` },
-// ];
-// // / console.log("files %O", files);
-// //     // console.log("rmbgOutput %O", process.env.UPLOADTHING_TOKEN);
-//     // const uploads = await utapi.uploadFilesFromUrl(files);
-//     // if (uploads.some((upload) => upload.error)) {
-//     //   console.error("Error uploading files", uploads[0].error);
-//     //   return Response.internalServerError();
-//     // }
-//     // const [originalUpload, noBackgroundUpload] = uploads;
-
-//     // console.log("finalEmoji %O", finalEmoji);
