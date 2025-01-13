@@ -6,10 +6,9 @@ import {
   integer,
   json,
   pgTable,
-  uuid,
   index,
+  serial,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -45,17 +44,7 @@ export const emojis = pgTable(
       .notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
-  (table) => ({
-    searchIndex: index("search_index").using(
-      "gin",
-      sql`(
-          setweight(to_tsvector('english', ${table.prompt}), 'A') ||
-          setweight(to_tsvector('english', ${table.description}), 'B') ||
-          setweight(to_tsvector('english', ${table.caption}), 'C')
-      )`
-    ),
-  })
+  }
 );
 
 // .where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
@@ -65,7 +54,7 @@ export const emojis = pgTable(
 export const likes = pgTable(
   "likes",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: serial("id").primaryKey(),
     
 
     userId: varchar("user_id")
@@ -109,6 +98,7 @@ export const likesRelations = relations(likes, ({ one }) => ({
   }),
 }));
 // Types
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Emoji = typeof emojis.$inferSelect;

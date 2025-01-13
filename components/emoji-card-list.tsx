@@ -10,11 +10,7 @@ interface EmojiCardListProps {
   isLiked?: boolean;
 }
 
-export default function EmojiCardList({
-  emoji,
-  isLiked = false,
-  index,
-}: EmojiCardListProps) {
+export default function EmojiCardList({ emoji, index }: EmojiCardListProps) {
   return (
     <li className="relative isolate hover:bg-muted/50 transition-colors ease-out duration-300 rounded-xl overflow-hidden select-none">
       <Link href={`/emoji/${emoji.id}`}>
@@ -61,16 +57,21 @@ export default function EmojiCardList({
               "use server";
 
               const newIsLiked = await toggleLike(emoji.userId, emoji.id);
+              console.log("newIsLiked %O", newIsLiked);
+
               revalidatePath("/");
+              revalidatePath(`/emoji/${emoji.id}`);
               // return newIsLiked;
             }}
           >
             <Heart
               className={`h-5 w-5 ${
-                isLiked ? "fill-primary text-primary" : ""
+                emoji.isFavorite ? "fill-primary text-primary" : ""
               }`}
             />
-            <span className="sr-only">{isLiked ? "Unlike" : "Like"}</span>
+            <span className="sr-only">
+              {emoji.isFavorite ? "Unlike" : "Like"}
+            </span>
           </Button>
         </form>
       </div>

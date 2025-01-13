@@ -5,10 +5,17 @@ import { currentUser } from "@clerk/nextjs/server";
 import { createUser } from "@/db/queries";
 import { getUserById, getUserLikedEmojis } from "@/db/queries";
 import { Suspense } from "react";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
+import { emojis } from "@/db/schema";
 
 export default async function HomePage() {
   const currUser = await currentUser();
   const user = await getUserById(currUser?.id || "");
+  // db.execute(sql`CREATE INDEX "search_index" ON "emojis" USING gin (
+  //   setweight(to_tsvector('english', coalesce(${emojis.prompt}, '')), 'A') ||
+  //   setweight(to_tsvector('english', coalesce(${emojis.description}, '')), 'B')
+  // )`);
 
   if (!user && currUser) {
     console.log("user not found");
@@ -25,10 +32,6 @@ export default async function HomePage() {
     console.log("CREATE NEW USER:", newUser.id, newUser.name, newUser.email);
     console.log("user found");
   }
-
-  const likedEmojis = await getUserLikedEmojis();
-
-  console.log("likedEmojis:", likedEmojis);
 
   return (
     <>

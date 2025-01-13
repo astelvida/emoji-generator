@@ -1,42 +1,36 @@
 import {
   getRecentEmojis,
   getRelatedEmojis,
+  getUser,
   getUserLikedEmojis,
   searchEmojis,
+  getEmojisWithFavorites,
 } from "@/db/queries";
 import { Skeleton } from "./ui/skeleton";
 import EmojiCardList from "./emoji-card-list";
-import { runSearch } from "@/db/search-emojis";
 
 interface EmojisGridProps {
   emojiId?: string | undefined;
   query?: string | undefined;
+  userId?: string | undefined;
 }
 
-export async function EmojisGrid({ emojiId, query }: EmojisGridProps) {
-  const [emojis, likedEmojis] = await Promise.all([
+export async function EmojisGrid({ emojiId, query, userId }: EmojisGridProps) {
+  const emojis =
     query && emojiId
-      ? getRelatedEmojis(emojiId, query)
+      ? await getRelatedEmojis(emojiId, query)
       : query
-      ? runSearch(query)
-      : getRecentEmojis(),
-    getUserLikedEmojis(),
-  ]);
+      ? await searchEmojis(query)
+      : await getRecentEmojis();
 
-  // Extract just the emoji IDs that the user has liked
-  const likedEmojiIds = new Set(likedEmojis.map(({ emoji }) => emoji.id));
+  console.log("emojis %O", emojis);
 
   return (
     <>
       <h2> LENGHT {emojis.length}</h2>
       <ul className="grid w-full auto-rows-max place-content-stretch justify-items-stretch grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {emojis.map((emoji, index) => (
-          <EmojiCardList
-            index={index}
-            emoji={emoji}
-            key={emoji.id}
-            isLiked={likedEmojiIds.has(emoji.id)}
-          />
+          <EmojiCardList key={emoji.id} index={index} emoji={emoji} />
         ))}
       </ul>
     </>

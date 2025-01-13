@@ -1,6 +1,6 @@
 {
-  "id": "c393eed3-7cda-404c-a6d4-68a4c033dfaa",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "dc7cbd67-9de1-4f98-922a-06f22e8eeee9",
+  "prevId": "c393eed3-7cda-404c-a6d4-68a4c033dfaa",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -99,7 +99,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "search_index": {
+          "name": "search_index",
+          "columns": [
+            {
+              "expression": "\n(\n  setweight(to_tsvector('english', coalesce(\"prompt\", '')), 'A') ||\n  setweight(to_tsvector('english', coalesce(\"description\", '')), 'B') ||\n  setweight(to_tsvector('english', coalesce(\"caption\", '')), 'C')\n)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "emojis_user_id_users_id_fk": {
           "name": "emojis_user_id_users_id_fk",

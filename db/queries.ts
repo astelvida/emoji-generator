@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, desc, sql, isNull, or, and, ne } from "drizzle-orm";
+import { eq, desc, sql, isNull, or, and, ne, isNotNull } from "drizzle-orm";
 import { users, emojis, User, Emoji, likes } from "./schema";
 import { db } from ".";
 import { currentUser } from "@clerk/nextjs/server";
@@ -10,19 +10,37 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
-export async function getUser() {
-  const currUser = await currentUser();
-  if (!currUser) throw new Error("User not found");
-  const [user] = await db.select().from(users).where(eq(users.id, currUser.id));
-  return user;
-}
+// Common query builder for emoji selection with like status
+const buildEmojiQuery = (userId: string | undefined) => {
+  return {
+    ...emojis,
+    isFavorite: isNotNull(likes.id),
+  };
+};
 
-export const getUserById = async (id: string): Promise<User | undefined> => {
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  return user;
+// Common join for likes
+const withLikesJoin = (query: any, userId: string | undefined) => {
+  return query.leftJoin(
+    likes,
+    and(eq(emojis.id, likes.emojiId), eq(likes.userId, userId))
+  );
 };
 
 // User queries
+export const getUser = cache(async () => {
+  const currUser = await currentUser();
+  if (!currUser) throw new Error("User not authenticated");
+  const [user] = await db.select().from(users).where(eq(users.id, currUser.id));
+  return user;
+});
+
+export const getUserById = cache(
+  async (id: string): Promise<User | undefined> => {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+);
+
 export const createUser = async (user: User): Promise<User> => {
   const [newUser] = await db
     .insert(users)
@@ -32,21 +50,22 @@ export const createUser = async (user: User): Promise<User> => {
   return newUser;
 };
 
-export const getEmoji = async (id: string): Promise<Emoji | undefined> => {
-  const [emoji] = await db.select().from(emojis).where(eq(emojis.id, id));
-  return emoji;
-};
-
 // Emoji queries
+export const getEmoji = cache(
+  async (id: string): Promise<Emoji | undefined> => {
+    const [emoji] = await db.select().from(emojis).where(eq(emojis.id, id));
+    return emoji;
+  }
+);
+
 export const createEmoji = async (emoji: Partial<Emoji>): Promise<Emoji> => {
   const user = await currentUser();
-  if (!user) throw new Error("User not found");
+  if (!user) throw new Error("User not authenticated");
 
   const [newEmoji] = await db
     .insert(emojis)
     .values({ ...emoji, userId: user.id })
     .returning();
-
   return newEmoji;
 };
 
@@ -62,18 +81,18 @@ export const updateEmoji = async (
   return emoji;
 };
 
-export const getEmojiCount = async (): Promise<number> => {
+export const getEmojiCount = cache(async (): Promise<number> => {
   const [count] = await db
     .select({ count: sql<number>`count(*)` })
     .from(emojis);
   return count.count;
-};
+});
 
 export const getPopularEmojis = cache(
-  async (limit: number = 200, offset: number = 0): Promise<Emoji[]> => {
-    return db
-      .select()
-      .from(emojis)
+  async (limit: number = 50, offset: number = 0): Promise<Emoji[]> => {
+    const user = await currentUser();
+    const query = db.select(buildEmojiQuery(user?.id)).from(emojis);
+    return withLikesJoin(query, user?.id)
       .orderBy(desc(emojis.favoriteCount), desc(emojis.createdAt))
       .limit(limit)
       .offset(offset);
@@ -81,10 +100,10 @@ export const getPopularEmojis = cache(
 );
 
 export const getRecentEmojis = cache(
-  async (limit: number = 200, offset: number = 0): Promise<Emoji[]> => {
-    return db
-      .select()
-      .from(emojis)
+  async (limit: number = 50, offset: number = 0): Promise<Emoji[]> => {
+    const user = await currentUser();
+    const query = db.select(buildEmojiQuery(user?.id)).from(emojis);
+    return withLikesJoin(query, user?.id)
       .orderBy(desc(emojis.createdAt))
       .limit(limit)
       .offset(offset);
@@ -110,86 +129,94 @@ export const deleteEmojisWithNoURL = async () => {
     .where(or(isNull(emojis.description), isNull(emojis.imageUrl)));
 };
 
-export const searchEmojis = async (
-  query: string,
-  limit: number = 200,
-  offset: number = 0
-) => {
-  const searchQuery = query
+// Search functionality
+export const searchEmojis = cache(
+  async (query: string, limit: number = 50, offset: number = 0) => {
+    const user = await currentUser();
+    const searchQuery = formatSearchQuery(query);
+    if (!searchQuery) return [];
+
+    const searchVector = buildSearchVector();
+    const baseQuery = db.select(buildEmojiQuery(user?.id)).from(emojis);
+
+    return withLikesJoin(baseQuery, user?.id)
+      .where(sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`)
+      .orderBy(desc(emojis.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+);
+
+// Helper functions
+const formatSearchQuery = (query: string): string => {
+  return query
     .trim()
     .split(/\s+/)
-    .map((term) => term.replace(/[^\w\s]/g, "")) // Remove special characters
-    .filter(Boolean) // Remove empty strings
-    .map((term) => `${term}:*`) // Add prefix matching
-    .join(" | "); // Use AND operation
-
-  console.log("searchQuery", searchQuery);
-
-  if (!searchQuery) return [];
-
-  const searchVector = sql`
-      to_tsvector('english', 
-        coalesce(${emojis.prompt}, '') || ' ' || 
-        coalesce(${emojis.description}, '') || ' ' || 
-        coalesce((
-          select string_agg(value::text, ' ')
-          from jsonb_array_elements_text(${emojis.categories}::jsonb)
-        ), '') || ' ' || 
-        coalesce((
-          select string_agg(value::text, ' ')
-          from jsonb_array_elements_text(${emojis.keywords}::jsonb)
-        ), '')
-      )
-    `;
-
-  return db
-    .select()
-    .from(emojis)
-    .where(sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`)
-    .orderBy(desc(emojis.createdAt))
-    .limit(limit)
-    .offset(offset);
+    .map((term) => term.replace(/[^\w\s]/g, ""))
+    .filter(Boolean)
+    .map((term) => `${term}:*`)
+    .join(" | ");
 };
 
-export const getRelatedEmojis = async (
-  emojiId: string,
-  query: string,
-  limit: number = 200,
-  offset: number = 0
-) => {
-  // const searchQuery = query
-  //   .trim()
-  //   .split(/\s+/)
-  //   .map((term) => `${term}:*`)
-  //   .join(" | ");
-
-  const searchQuery = query
-    .trim()
-    .split(/\s+/)
-    .map((term) => term.replace(/[^\w\s]/g, "")) // Remove special characters
-    .filter(Boolean) // Remove empty strings
-    .map((term) => `${term}:*`) // Add prefix matching
-    .join(" | "); // Use AND operation
-
-  console.log("RELEVANT QUERY§", searchQuery);
-
-  if (!searchQuery) return [];
-
-  const searchVector = sql`to_tsvector('english',  coalesce(${emojis.prompt}, '') || ' ')
- `;
-  return db
-    .select()
-    .from(emojis)
-    .where(
-      and(
-        sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`,
-        ne(emojis.id, emojiId)
-      )
+const buildSearchVector = () => {
+  return sql`
+    to_tsvector('english', 
+      coalesce(${emojis.prompt}, '') || ' ' || 
+      coalesce(${emojis.description}, '') || ' ' || 
+      coalesce((
+        select string_agg(value::text, ' ')
+        from jsonb_array_elements_text(${emojis.categories}::jsonb)
+      ), '') || ' ' || 
+      coalesce((
+        select string_agg(value::text, ' ')
+        from jsonb_array_elements_text(${emojis.keywords}::jsonb)
+      ), '')
     )
-    .orderBy(desc(emojis.createdAt))
-    .limit(limit)
-    .offset(offset);
+  `;
 };
+
+export const getRelatedEmojis = cache(
+  async (
+    emojiId: string,
+    query: string,
+    limit: number = 50,
+    offset: number = 0
+  ) => {
+    const user = await currentUser();
+    const userId = user?.id;
+
+    const searchQuery = query
+      .trim()
+      .split(/\s+/)
+      .map((term) => term.replace(/[^\w\s]/g, "")) // Remove special characters
+      .filter(Boolean) // Remove empty strings
+      .map((term) => `${term}:*`) // Add prefix matching
+      .join(" | "); // Use AND operation
+
+    console.log("RELEVANT QUERY§", searchQuery);
+
+    const searchVector = sql`to_tsvector('english',  coalesce(${emojis.prompt}, '') || ' ')`;
+    return db
+      .select({
+        ...emojis,
+        isFavorite: isNotNull(likes.id), // Check if the like exists
+      })
+      .from(emojis)
+      .where(
+        and(
+          sql`${searchVector} @@ to_tsquery('english', ${searchQuery})`,
+          ne(emojis.id, emojiId)
+        )
+      )
+      .leftJoin(
+        likes,
+        and(eq(emojis.id, likes.emojiId), eq(likes.userId, userId))
+      )
+      .orderBy(desc(emojis.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+);
 
 // Like/Unlike emoji
 export const toggleLike = async (userId: string, emojiId: string) => {
@@ -221,12 +248,7 @@ export const toggleLike = async (userId: string, emojiId: string) => {
 };
 
 // Get user's liked emojis
-export const getUserLikedEmojis = cache(async () => {
-  const user = await currentUser();
-  const userId = user?.id;
-
-  if (!userId) return [];
-
+export const getUserLikedEmojis = cache(async (userId: string) => {
   return db
     .select({
       emoji: emojis,
@@ -265,3 +287,23 @@ export const getEmojiWithLikeStatus = cache(
     };
   }
 );
+
+export async function getEmojisWithFavorites(userId: string) {
+  console.log("userId %O", userId);
+  const emojisWithIsFavorite = await db
+    .select({
+      ...emojis,
+      isFavorite: isNotNull(likes.id), // Check if the like exists
+    })
+    .from(emojis)
+    .leftJoin(
+      likes,
+      and(eq(emojis.id, likes.emojiId), eq(likes.userId, userId))
+    )
+    .orderBy(desc(emojis.createdAt))
+    .limit(3);
+
+  // console.log("emojisWithIsFavoriteYOFODFOF", emojisWithIsFavorite);
+
+  return emojisWithIsFavorite;
+}
