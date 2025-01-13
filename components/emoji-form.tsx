@@ -8,7 +8,6 @@ import { useFormStatus } from "react-dom";
 import { generateStart } from "@/server/actions";
 import React from "react";
 import { emojiPrompts } from "./data";
-import { generateEmojiNames } from "@/server/openai";
 
 export function EmojiForm() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -32,8 +31,8 @@ export function EmojiForm() {
 
   const randomizePrompt = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const randomIndex = Math.floor(Math.random() * sampleEmojiPrompts.length);
-    const randomPrompt = sampleEmojiPrompts[randomIndex];
+    const randomIndex = Math.floor(Math.random() * emojiPrompts.length);
+    const randomPrompt = emojiPrompts[randomIndex];
     updatePrompt(randomPrompt);
   };
 
@@ -67,15 +66,6 @@ export function EmojiForm() {
           <SubmitButton />
         </div>
       </form>
-      <Button
-        variant="outline"
-        onClick={async () => {
-          const emojiNames = await generateEmojiNames("animals");
-          emojiNames?.forEach(async (prompt: string) => generateStart(prompt));
-        }}
-      >
-        Generate new emojis
-      </Button>
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">

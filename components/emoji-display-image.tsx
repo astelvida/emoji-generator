@@ -33,13 +33,13 @@ export function EmojiDisplayImage({
     <>
       <div className="relative aspect-square w-full flex-1 self-center rounded-lg">
         {imageUrl && (
-          <img
+          <Image  
             src={imageUrl}
             alt={prompt}
-            width={768}
-            height={768}
-            className="aspect-square object-contain"
-            // priority
+            width={512}
+            height={512}
+            className="aspect-square object-contain"  
+            priority
             onLoad={() => {
               if (isFirstLoad) {
                 setIsFirstLoad(false);

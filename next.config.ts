@@ -28,6 +28,9 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    ppr: true,
+  },
 };
 
 export default nextConfig;

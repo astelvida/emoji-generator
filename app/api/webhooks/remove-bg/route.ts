@@ -3,7 +3,6 @@ import Replicate from "replicate";
 import { extractPrompt } from "@/lib/utils";
 import slugify from "slugify";
 import { put } from "@vercel/blob";
-import { generateEmojiInfo } from "@/server/openai";
 
 // import { UTApi } from "uploadthing/server";
 // const utapi = new UTApi();
@@ -37,17 +36,6 @@ export async function POST(req: Request) {
     const slug = slugify(cleanedPrompt) + "-" + id;
 
     // convert output to a blob object
-    async function uploadOriginal() {
-      const originalFile = await fetch(output[0]).then((res) => res.blob());
-      const { url: originalUrl } = await put(
-        `${slug}-original.png`,
-        originalFile,
-        {
-          access: "public",
-        }
-      );
-      return originalUrl;
-    }
 
     async function uploadNoBackground() {
       const noBackgroundFile = await fetch(rmbgOutput.toString()).then((res) =>
@@ -63,19 +51,12 @@ export async function POST(req: Request) {
       return noBackgroundUrl;
     }
 
-    const [originalUrl, noBackgroundUrl] = await Promise.all([
-      uploadOriginal(),
-      uploadNoBackground(),
-    ]);
-
-    const emojiInfo = await generateEmojiInfo(noBackgroundUrl, cleanedPrompt);
+    const noBackgroundUrl = await uploadNoBackground();
 
     // update emoji
     const finalEmoji = await updateEmoji(id, {
       slug,
-      originalUrl,
       imageUrl: noBackgroundUrl,
-      ...emojiInfo,
       status: "generated",
     });
 

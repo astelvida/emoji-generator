@@ -25,20 +25,11 @@ export const emojis = pgTable(
   "emojis",
   {
     id: varchar("id").primaryKey(),
-
     prompt: text("prompt").notNull(),
     slug: text("slug"),
-    originalUrl: text("original_url"),
     imageUrl: text("image_url"),
-
-    caption: text("caption"),
-    description: text("description"),
-    categories: json("categories").$type<string[]>().default([]),
-    keywords: json("keywords").$type<string[]>().default([]),
-
     status: text("status").default("generating"),
     favoriteCount: integer("favorite_count").default(0),
-
     userId: varchar("user_id")
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),

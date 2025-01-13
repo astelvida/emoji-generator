@@ -3,7 +3,7 @@
 import { eq, desc, sql, isNull, or, and, ne, isNotNull } from "drizzle-orm";
 import { users, emojis, User, Emoji, likes } from "./schema";
 import { db } from ".";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { cache } from "react";
 
 import { redirect } from "next/navigation";
@@ -28,9 +28,13 @@ const withLikesJoin = (query: any, userId: string | undefined) => {
 
 // User queries
 export const getUser = cache(async () => {
-  const currUser = await currentUser();
-  if (!currUser) throw new Error("User not authenticated");
-  const [user] = await db.select().from(users).where(eq(users.id, currUser.id));
+  const { userId } = await auth();
+  if (!userId) throw new Error("User not authenticated");
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
   return user;
 });
 
@@ -59,12 +63,12 @@ export const getEmoji = cache(
 );
 
 export const createEmoji = async (emoji: Partial<Emoji>): Promise<Emoji> => {
-  const user = await currentUser();
-  if (!user) throw new Error("User not authenticated");
+  const { userId } = await auth();
+  if (!userId) throw new Error("User not authenticated");
 
   const [newEmoji] = await db
     .insert(emojis)
-    .values({ ...emoji, userId: user.id })
+    .values({ ...emoji, userId })
     .returning();
   return newEmoji;
 };
@@ -73,6 +77,9 @@ export const updateEmoji = async (
   id: string,
   data: Partial<Emoji>
 ): Promise<Emoji> => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User not authenticated");
+
   const [emoji] = await db
     .update(emojis)
     .set(data)

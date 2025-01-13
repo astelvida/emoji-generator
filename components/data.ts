@@ -1,4 +1,4 @@
-export const emojiPrompts = [
+export const emojiPrompts1 = [
   "Glowing Heart",
   "Girl with Rainbow Hair",
   "Shark with Tophat",
@@ -81,9 +81,12 @@ export const emojiPrompts2 = [
 "happy face with books",
 "face with zippered mouth at night",
 "face with monocle at microscope",
-"ghost with computer",
-"face vomiting with party popper"
-]
+  "ghost with computer",
+  "face vomiting with party popper",
+];
+
+export const emojiPrompts = [...emojiPrompts1, ...emojiPrompts2];
+
 // prettier-ignore
 export const emojiIdeas: { name: string; category: string; description: string }[] = [
   // Nature & Environment

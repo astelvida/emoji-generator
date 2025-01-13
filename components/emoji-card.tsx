@@ -1,8 +1,9 @@
 import { EmojiDisplayUser } from "@/components/emoji-display-user";
-import { EmojiDisplayImage } from "@/components/emoji-display-image";
+import { EmojiDisplayImage, EmojiDisplayImageSkeleton } from "@/components/emoji-display-image";
 import { EmojiDisplayButtons } from "./emoji-display-buttons";
 import { EmojiActionButtons } from "./emoji-action-buttons";
 import { Emoji } from "@/db/schema";
+import { Suspense } from "react";
 
 type EmojiCard = {
   id: string;
@@ -32,7 +33,7 @@ export async function EmojiCard({
       <div className="flex flex-row flex-nowrap items-start justify-between">
         <h1 className="text-2xl font-bold">{emoji?.prompt}</h1>
       </div>
-      <EmojiDisplayImage imageUrl={emoji.imageUrl} prompt={emoji.prompt} />
+        <EmojiDisplayImage imageUrl={emoji.imageUrl} prompt={emoji.prompt} />
       <EmojiActionButtons
         userId={emoji.userId}
         imageUrl={emoji.imageUrl}

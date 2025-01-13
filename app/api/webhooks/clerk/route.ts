@@ -1,7 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { auth, currentUser, WebhookEvent } from "@clerk/nextjs/server";
-import { createUser, getUserById } from "@/db/queries";
+import { auth, WebhookEvent } from "@clerk/nextjs/server";    
+import { createUser } from "@/db/queries";
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -53,37 +53,10 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
-  // console.log("Webhook payload:", JSON.stringify(payload, null, 2));
-
-  // if (evt.type === "session.created") {
-  //   console.log("session created");
-  //   console.log("session userId:", evt.data.user_id);
-  //   const user = await getUserById(evt.data.user_id);
-  //   console.log("user:", user);
-
-  //   if (!user) {
-  //     const { user: currUser } = await auth();
-  //     console.log("user not found");
-  //     console.log("currUser:", currUser);
-  //     const newUser = await createUser({
-  //       id: currUser?.id,
-  //       name:
-  //         `${currUser?.firstName || ""} ${currUser?.lastName || ""}`.trim() ||
-  //         "Horse With No Name",
-  //       email: currUser?.emailAddresses[0]?.emailAddress,
-  //       username: currUser?.username,
-  //       imageUrl: currUser?.imageUrl,
-  //     });
-  //     console.log("CREATE NEW USER:", newUser.id, newUser.name, newUser.email);
-  //   }
-
-  //   console.log("user found");
-  // }
 
   if (evt.type === "user.created") {
     console.log("userId:", evt.data.id);
     console.log("payload:", JSON.stringify(payload, null, 2));
-
     console.log("user:", JSON.stringify(evt.data, null, 2));
 
     const user = evt.data;
